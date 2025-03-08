@@ -1,0 +1,13 @@
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index ebf20ab..6d894da 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -382,7 +382,7 @@ if (CPUINFO_SUPPORTED)
+         URL ${DEP_URL_pytorch_cpuinfo}
+         URL_HASH SHA1=${DEP_SHA1_pytorch_cpuinfo}
+         EXCLUDE_FROM_ALL
+-        PATCH_COMMAND ${Patch_EXECUTABLE} -p1 < ${PROJECT_SOURCE_DIR}/patches/cpuinfo/9bb12d342fd9479679d505d93a478a6f9cd50a47.patch
++        PATCH_COMMAND ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/cpuinfo/9bb12d342fd9479679d505d93a478a6f9cd50a47.patch
+         FIND_PACKAGE_ARGS NAMES cpuinfo
+       )
+   else()
