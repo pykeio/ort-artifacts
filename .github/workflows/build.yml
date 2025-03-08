@@ -128,7 +128,7 @@ jobs:
             feature-set: none
             runs-on: windows-2022
           - target: wasm32-unknown-emscripten
-            args: "-W"
+            args: "-W --webgpu"
             static: true
             feature-set: none
             runs-on: ubuntu-22.04

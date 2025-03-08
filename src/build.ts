@@ -133,7 +133,9 @@ await new Command()
 		}
 		if (options.webgpu) {
 			args.push('-Donnxruntime_USE_WEBGPU=ON');
-			args.push('-Donnxruntime_USE_EXTERNAL_DAWN=ON');
+			if (!options.wasm) {
+				args.push('-Donnxruntime_USE_EXTERNAL_DAWN=ON');
+			}
 		}
 		if (options.xnnpack) {
 			args.push('-Donnxruntime_USE_XNNPACK=ON');
