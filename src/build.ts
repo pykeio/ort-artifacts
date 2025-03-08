@@ -24,6 +24,7 @@ await new Command()
 	.option('--coreml', 'Enable CoreML EP')
 	.option('--xnnpack', 'Enable XNNPACK EP')
 	.option('--rocm', 'Enable ROCm EP')
+	.option('--webgpu', 'Enable WebGPU EP')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.option('-W, --wasm', 'Compile for WebAssembly (with patches)')
 	.option('--emsdk <version:string>', 'Emsdk version to use for WebAssembly build', { default: '3.1.59' })
@@ -130,6 +131,10 @@ await new Command()
 			args.push('-Donnxruntime_USE_ROCM=ON');
 			args.push('-Donnxruntime_ROCM_HOME=/opt/rocm');
 		}
+		if (options.webgpu) {
+			args.push('-Donnxruntime_USE_WEBGPU=ON');
+			args.push('-Donnxruntime_USE_EXTERNAL_DAWN=ON');
+		}
 		if (options.xnnpack) {
 			args.push('-Donnxruntime_USE_XNNPACK=ON');
 		}
@@ -169,17 +174,10 @@ await new Command()
 		if (platform === 'win32' && !options.static) {
 			args.push('-DONNX_USE_MSVC_STATIC_RUNTIME=OFF');
 			args.push('-Dprotobuf_MSVC_STATIC_RUNTIME=OFF');
-			args.push('-Dgtest_force_shared_crt=OFF');
+			args.push('-Dgtest_force_shared_crt=ON');
 		}
 
 		if (!options.static) {
-			// actually, with CUDA & TensorRT, we could statically link the onnxruntime core (just not the EPs)
-			// ... could be the move (just needs the below fix for windows)
-			// 	if (platform === 'win32') {
-			// 		args.push('-DONNX_USE_MSVC_STATIC_RUNTIME=OFF');
-			// 		args.push('-Dprotobuf_MSVC_STATIC_RUNTIME=OFF');
-			// 		args.push('-Dgtest_force_shared_crt=ON');
-			// 	}
 			args.push('-Donnxruntime_BUILD_SHARED_LIB=ON');
 		} else {
 			if (platform === 'win32') {

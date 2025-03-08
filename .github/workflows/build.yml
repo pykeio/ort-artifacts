@@ -33,16 +33,16 @@ jobs:
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
             args: "-t --cuda --trt --xnnpack"
-            static: false
+            static: true
             feature-set: train,cu12
             cuda-version: '12.5.1'
             runs-on: ubuntu-22.04
-          - target: x86_64-unknown-linux-gnu
-            args: "-t --rocm --xnnpack"
-            static: false
-            feature-set: train,rocm
-            rocm: true
-            runs-on: ubuntu-22.04
+          # - target: x86_64-unknown-linux-gnu
+          #   args: "-t --rocm --xnnpack"
+          #   static: false
+          #   feature-set: train,rocm
+          #   rocm: true
+          #   runs-on: ubuntu-22.04
           - target: aarch64-apple-darwin
             args: "-t --coreml -A aarch64 --xnnpack"
             static: true
@@ -55,7 +55,7 @@ jobs:
             runs-on: macos-13
           - target: x86_64-pc-windows-msvc
             args: "-t --directml --cuda --trt --xnnpack"
-            static: false
+            static: true
             feature-set: train,cu12
             cuda-version: '12.5.1'
             runs-on: windows-2022
@@ -81,16 +81,21 @@ jobs:
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
             args: "--cuda --trt --xnnpack"
-            static: false
+            static: true
             feature-set: cu12
             cuda-version: '12.5.1'
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "--rocm --xnnpack"
-            static: false
-            feature-set: rocm
-            rocm: true
+            args: "--webgpu"
+            static: true
+            feature-set: wgpu
             runs-on: ubuntu-22.04
+          # - target: x86_64-unknown-linux-gnu
+          #   args: "--rocm --xnnpack"
+          #   static: false
+          #   feature-set: rocm
+          #   rocm: true
+          #   runs-on: ubuntu-22.04
           - target: aarch64-apple-darwin
             args: "--coreml -A aarch64 --xnnpack"
             static: true
@@ -103,9 +108,14 @@ jobs:
             runs-on: macos-13
           - target: x86_64-pc-windows-msvc
             args: "--directml --cuda --trt --xnnpack"
-            static: false
+            static: true
             feature-set: cu12
             cuda-version: '12.5.1'
+            runs-on: windows-2022
+          - target: x86_64-pc-windows-msvc
+            args: "--webgpu"
+            static: true
+            feature-set: wgpu
             runs-on: windows-2022
           - target: aarch64-pc-windows-msvc
             args: "-A aarch64 --directml"
@@ -139,12 +149,12 @@ jobs:
         if: matrix.cuda-version && runner.os != 'macOS'
         with:
           cuda: ${{ matrix.cuda-version }}
-      - name: Install ROCm
-        if: matrix.rocm && runner.os == 'Linux'
-        run: |
-          wget https://repo.radeon.com/amdgpu-install/6.1.1/ubuntu/jammy/amdgpu-install_6.1.60101-1_all.deb
-          sudo apt install ./amdgpu-install_6.1.60101-1_all.deb -y
-          DEBIAN_FRONTEND=noninteractive amdgpu-install --accept-eula -y --usecase=rocm,hiplibsdk --no-dkms
+      # - name: Install ROCm
+      #   if: matrix.rocm && runner.os == 'Linux'
+      #   run: |
+      #     wget https://repo.radeon.com/amdgpu-install/6.1.1/ubuntu/jammy/amdgpu-install_6.1.60101-1_all.deb
+      #     sudo apt install ./amdgpu-install_6.1.60101-1_all.deb -y
+      #     DEBIAN_FRONTEND=noninteractive amdgpu-install --accept-eula -y --usecase=rocm,hiplibsdk --no-dkms
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
