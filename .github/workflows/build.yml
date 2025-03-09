@@ -54,7 +54,7 @@ jobs:
             feature-set: train
             runs-on: macos-13
           - target: x86_64-pc-windows-msvc
-            args: "-t --directml --cuda --trt --xnnpack -N"
+            args: "-t --directml --cuda --trt --xnnpack"
             static: true
             feature-set: train,cu12
             cuda-version: '12.5.1'
@@ -65,7 +65,7 @@ jobs:
             feature-set: train
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "-t --directml --xnnpack -N"
+            args: "-t --directml --xnnpack"
             static: true
             feature-set: train
             runs-on: windows-2022
@@ -107,13 +107,13 @@ jobs:
             feature-set: none
             runs-on: macos-13
           - target: x86_64-pc-windows-msvc
-            args: "--directml --cuda --trt --xnnpack -N"
+            args: "--directml --cuda --trt --xnnpack"
             static: true
             feature-set: cu12
             cuda-version: '12.5.1'
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "--webgpu -N"
+            args: "--webgpu"
             static: true
             feature-set: wgpu
             runs-on: windows-2025
@@ -123,7 +123,7 @@ jobs:
             feature-set: none
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "--directml --xnnpack -N"
+            args: "--directml --xnnpack"
             static: true
             feature-set: none
             runs-on: windows-2022

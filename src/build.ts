@@ -219,7 +219,7 @@ await new Command()
 		const artifactOutDir = join(root, 'artifact', 'onnxruntime');
 
 		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`;
-		await $`cmake --build build -j4`;
+		await $`cmake --build build --config Release --parallel ${cpus().length}`;
 		await $`cmake --install build`;
 	})
 	.parse(Deno.args);
