@@ -22,17 +22,17 @@ jobs:
       matrix:
         include:
           - target: aarch64-unknown-linux-gnu
-            args: "-t -A aarch64 --xnnpack"
+            args: "-t -A aarch64 --xnnpack -N"
             static: true
             feature-set: train
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "-t --xnnpack"
+            args: "-t --xnnpack -N"
             static: true
             feature-set: train
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "-t --cuda --trt --xnnpack"
+            args: "-t --cuda --trt --xnnpack -N"
             static: true
             feature-set: train,cu12
             cuda-version: '12.5.1'
@@ -44,17 +44,17 @@ jobs:
           #   rocm: true
           #   runs-on: ubuntu-22.04
           - target: aarch64-apple-darwin
-            args: "-t --coreml -A aarch64 --xnnpack"
+            args: "-t --coreml -A aarch64 --xnnpack -N"
             static: true
             feature-set: train
             runs-on: macos-13
           - target: x86_64-apple-darwin
-            args: "-t --coreml --xnnpack"
+            args: "-t --coreml --xnnpack -N"
             static: true
             feature-set: train
             runs-on: macos-13
           - target: x86_64-pc-windows-msvc
-            args: "-t --directml --cuda --trt --xnnpack"
+            args: "-t --directml --cuda --trt --xnnpack -N"
             static: true
             feature-set: train,cu12
             cuda-version: '12.5.1'
@@ -65,28 +65,28 @@ jobs:
             feature-set: train
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "-t --directml --xnnpack"
+            args: "-t --directml --xnnpack -N"
             static: true
             feature-set: train
             runs-on: windows-2022
           - target: aarch64-unknown-linux-gnu
-            args: "-A aarch64 --xnnpack"
+            args: "-A aarch64 --xnnpack -N"
             static: true
             feature-set: none
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "--xnnpack"
+            args: "--xnnpack -N"
             static: true
             feature-set: none
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "--cuda --trt --xnnpack"
+            args: "--cuda --trt --xnnpack -N"
             static: true
             feature-set: cu12
             cuda-version: '12.5.1'
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "--webgpu"
+            args: "--webgpu -N"
             static: true
             feature-set: wgpu
             runs-on: ubuntu-22.04
@@ -97,23 +97,23 @@ jobs:
           #   rocm: true
           #   runs-on: ubuntu-22.04
           - target: aarch64-apple-darwin
-            args: "--coreml -A aarch64 --xnnpack"
+            args: "--coreml -A aarch64 --xnnpack -N"
             static: true
             feature-set: none
             runs-on: macos-13
           - target: x86_64-apple-darwin
-            args: "--coreml --xnnpack"
+            args: "--coreml --xnnpack -N"
             static: true
             feature-set: none
             runs-on: macos-13
           - target: x86_64-pc-windows-msvc
-            args: "--directml --cuda --trt --xnnpack"
+            args: "--directml --cuda --trt --xnnpack -N"
             static: true
             feature-set: cu12
             cuda-version: '12.5.1'
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "--webgpu"
+            args: "--webgpu -N"
             static: true
             feature-set: wgpu
             runs-on: windows-2025
@@ -123,12 +123,12 @@ jobs:
             feature-set: none
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "--directml --xnnpack"
+            args: "--directml --xnnpack -N"
             static: true
             feature-set: none
             runs-on: windows-2022
           - target: wasm32-unknown-emscripten
-            args: "-W --webgpu"
+            args: "-W --webgpu -N"
             static: true
             feature-set: none
             runs-on: ubuntu-22.04
