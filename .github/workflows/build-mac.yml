@@ -1,0 +1,57 @@
+name: Build macOS
+on:
+  workflow_dispatch:
+    inputs:
+      onnxruntime-version:
+        type: string
+        description: "ONNX Runtime version (e.g. 1.18.0)"
+        required: true
+env:
+  GCC_VERSION: '11'
+  CMAKE_VERSION: '3.28'
+  PYTHON_VERSION: '3.10'
+  NODE_VERSION: '18'
+  XCODE_VERSION: '14.3.1'
+  MACOSX_DEPLOYMENT_TARGET: '13.3'
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            args: "-t --coreml -A aarch64 --xnnpack -N"
+            static: true
+            feature-set: train
+            runs-on: macos-13
+          - target: x86_64-apple-darwin
+            args: "-t --coreml --xnnpack -N"
+            static: true
+            feature-set: train
+            runs-on: macos-13
+          - target: aarch64-apple-darwin
+            args: "--coreml -A aarch64 --xnnpack -N"
+            static: true
+            feature-set: none
+            runs-on: macos-13
+          - target: x86_64-apple-darwin
+            args: "--coreml --xnnpack -N"
+            static: true
+            feature-set: none
+            runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: seanmiddleditch/gha-setup-ninja@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run builder
+        run:
+          deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} ${{ matrix.static && '-s' || '' }} ${{ matrix.args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ortrs_${{ matrix.static && 'static' || 'dylib' }}${{ matrix.feature-set != 'none' && format('_{0}', matrix.feature-set) || '' }}-v${{ inputs.onnxruntime-version }}-${{ matrix.target }}
+          path: artifact
+          if-no-files-found: error
