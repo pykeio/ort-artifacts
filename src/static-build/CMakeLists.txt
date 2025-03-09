@@ -179,6 +179,9 @@ if(onnxruntime_USE_WEBGPU)
         install(FILES "$<TARGET_FILE_DIR:dxcompiler>/dxil.dll" "$<TARGET_FILE_DIR:dxcompiler>/dxcompiler.dll" TYPE LIB)
     endif()
 endif()
+if(onnxruntime_USE_DML)
+    install(FILES "$<TARGET_FILE_DIR:onnxruntime_providers_dml>/DirectML.dll" TYPE LIB)
+endif()
 
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${PROJECT_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX}
