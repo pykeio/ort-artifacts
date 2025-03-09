@@ -134,7 +134,8 @@ await new Command()
 		if (options.webgpu) {
 			args.push('-Donnxruntime_USE_WEBGPU=ON');
 			if (!options.wasm) {
-				args.push('-Donnxruntime_USE_EXTERNAL_DAWN=ON');
+				args.push('-Donnxruntime_USE_EXTERNAL_DAWN=OFF');
+				args.push('-Donnxruntime_BUILD_DAWN_MONOLITHIC_LIBRARY=ON');
 			}
 		}
 		if (options.xnnpack) {
@@ -204,6 +205,7 @@ await new Command()
 		}
 
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
+		const buildDir = join(onnxruntimeRoot, 'build');
 		const outDir = join(root, 'output');
 
 		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${outDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`;
@@ -211,21 +213,21 @@ await new Command()
 		await $`cmake --install build --config Release`;
 
 		const artifactOutDir = join(root, 'artifact');
-		await Deno.mkdir(artifactOutDir);
+		await Deno.mkdir(artifactOutDir, { recursive: true });
 
 		const artifactLibDir = join(artifactOutDir, 'onnxruntime', 'lib');
 		await Deno.mkdir(artifactLibDir, { recursive: true });
-		const srcLibsDir = join(outDir, 'lib');
-
+		
 		const staticLibName = (name: string) =>
 			`${platform !== 'win32' ? 'lib' : ''}${name}${platform !== 'win32' ? '.a' : '.lib'}`;
 		const dynamicLibName = (name: string) =>
 			`${platform !== 'win32' ? 'lib' : ''}${name}${platform === 'win32' ? '.dll' : platform === 'darwin' ? '.dylib' : '.so'}`;
+		const srcLibsDir = join(buildDir, 'onnxruntime', 'Release');
 		const copyLib = async (filename: string) =>
 			await Deno.copyFile(join(srcLibsDir, filename), join(artifactLibDir, filename));
 
 		if (options.static) {
-			await copyLib(staticLibName('onnxruntime'));
+			await Deno.copyFile(join(outDir, 'lib', staticLibName('onnxruntime')), join(artifactLibDir, staticLibName('onnxruntime')));
 		} else {
 			if (platform !== 'win32') {
 				await copyLib(dynamicLibName('onnxruntime'));
@@ -234,29 +236,40 @@ await new Command()
 				// on windows, onnxruntime.dll is in /bin/, for whatever reason
 				await Deno.copyFile(join(outDir, 'bin', 'onnxruntime.dll'), join(artifactLibDir, 'onnxruntime.dll'));
 			}
+		}
 
-			if (options.cuda || options.trt || options.rocm) {
-				if (platform !== 'win32') {
-					await copyLib(dynamicLibName('onnxruntime_providers_shared'));
-				} else {
-					await copyLib(staticLibName('onnxruntime_providers_shared'));
-					// ditto 🙃
+		if (options.cuda || options.trt || options.rocm) {
+			if (platform !== 'win32') {
+				await copyLib(dynamicLibName('onnxruntime_providers_shared'));
+			} else {
+				// await copyLib(staticLibName('onnxruntime_providers_shared'));
+				try {
 					await Deno.copyFile(
 						join(outDir, 'bin', 'onnxruntime_providers_shared.dll'),
 						join(artifactLibDir, 'onnxruntime_providers_shared.dll')
 					);
+				} catch {
+					await copyLib(dynamicLibName('onnxruntime_providers_shared'));
 				}
 			}
+		}
 
-			if (options.cuda) {
-				await copyLib(dynamicLibName('onnxruntime_providers_cuda'));
+		if (options.cuda) {
+			await copyLib(dynamicLibName('onnxruntime_providers_cuda'));
+		}
+		if (options.trt) {
+			await copyLib(dynamicLibName('onnxruntime_providers_tensorrt'));
+		}
+		if (options.rocm) {
+			await copyLib(dynamicLibName('onnxruntime_providers_rocm'));
+		}
+		
+		if (options.webgpu) {
+			if (platform === 'win32') {
+				await copyLib(dynamicLibName('dxcompiler'));
+				await copyLib(dynamicLibName('dxil'));
 			}
-			if (options.trt) {
-				await copyLib(dynamicLibName('onnxruntime_providers_tensorrt'));
-			}
-			if (options.rocm) {
-				await copyLib(dynamicLibName('onnxruntime_providers_rocm'));
-			}
+			await copyLib(dynamicLibName('webgpu_dawn'));
 		}
 	})
 	.parse(Deno.args);
