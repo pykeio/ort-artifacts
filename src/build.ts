@@ -22,9 +22,11 @@ await new Command()
 	.option('--trt', 'Enable TensorRT EP', { depends: [ 'cuda' ] })
 	.option('--directml', 'Enable DirectML EP')
 	.option('--coreml', 'Enable CoreML EP')
+	.option('--dnnl', 'Enable DNNL EP')
 	.option('--xnnpack', 'Enable XNNPACK EP')
 	.option('--rocm', 'Enable ROCm EP')
 	.option('--webgpu', 'Enable WebGPU EP')
+	.option('-N, --ninja', 'build with ninja')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.option('-W, --wasm', 'Compile for WebAssembly (with patches)')
 	.option('--emsdk <version:string>', 'Emsdk version to use for WebAssembly build', { default: '4.0.3' })
@@ -133,10 +135,14 @@ await new Command()
 		}
 		if (options.webgpu) {
 			args.push('-Donnxruntime_USE_WEBGPU=ON');
+			args.push('-Donnxruntime_ENABLE_DELAY_LOADING_WIN_DLLS=OFF');
 			if (!options.wasm) {
 				args.push('-Donnxruntime_USE_EXTERNAL_DAWN=OFF');
 				args.push('-Donnxruntime_BUILD_DAWN_MONOLITHIC_LIBRARY=ON');
 			}
+		}
+		if (options.dnnl) {
+			args.push('-Donnxruntime_USE_DNNL=ON');
 		}
 		if (options.xnnpack) {
 			args.push('-Donnxruntime_USE_XNNPACK=ON');
@@ -204,72 +210,16 @@ await new Command()
 			args.push(`-DCMAKE_CXX_FLAGS=${allFlags}`);
 		}
 
+		if (options.ninja && !(platform === 'win32' && options.arch === 'aarch64')) {
+			args.push('-G', 'Ninja');
+		}
+
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
 		const buildDir = join(onnxruntimeRoot, 'build');
-		const outDir = join(root, 'output');
+		const artifactOutDir = join(root, 'artifact', 'onnxruntime');
 
-		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${outDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`;
-		await $`cmake --build build --config Release --parallel ${cpus().length}`;
-		await $`cmake --install build --config Release`;
-
-		const artifactOutDir = join(root, 'artifact');
-		await Deno.mkdir(artifactOutDir, { recursive: true });
-
-		const artifactLibDir = join(artifactOutDir, 'onnxruntime', 'lib');
-		await Deno.mkdir(artifactLibDir, { recursive: true });
-		
-		const staticLibName = (name: string) =>
-			`${platform !== 'win32' ? 'lib' : ''}${name}${platform !== 'win32' ? '.a' : '.lib'}`;
-		const dynamicLibName = (name: string) =>
-			`${platform !== 'win32' ? 'lib' : ''}${name}${platform === 'win32' ? '.dll' : platform === 'darwin' ? '.dylib' : '.so'}`;
-		const srcLibsDir = join(buildDir, 'onnxruntime', 'Release');
-		const copyLib = async (filename: string) =>
-			await Deno.copyFile(join(srcLibsDir, filename), join(artifactLibDir, filename));
-
-		if (options.static) {
-			await Deno.copyFile(join(outDir, 'lib', staticLibName('onnxruntime')), join(artifactLibDir, staticLibName('onnxruntime')));
-		} else {
-			if (platform !== 'win32') {
-				await copyLib(dynamicLibName('onnxruntime'));
-			} else {
-				await copyLib(staticLibName('onnxruntime'));
-				// on windows, onnxruntime.dll is in /bin/, for whatever reason
-				await Deno.copyFile(join(outDir, 'bin', 'onnxruntime.dll'), join(artifactLibDir, 'onnxruntime.dll'));
-			}
-		}
-
-		if (options.cuda || options.trt || options.rocm) {
-			if (platform !== 'win32') {
-				await copyLib(dynamicLibName('onnxruntime_providers_shared'));
-			} else {
-				// await copyLib(staticLibName('onnxruntime_providers_shared'));
-				try {
-					await Deno.copyFile(
-						join(outDir, 'bin', 'onnxruntime_providers_shared.dll'),
-						join(artifactLibDir, 'onnxruntime_providers_shared.dll')
-					);
-				} catch {
-					await copyLib(dynamicLibName('onnxruntime_providers_shared'));
-				}
-			}
-		}
-
-		if (options.cuda) {
-			await copyLib(dynamicLibName('onnxruntime_providers_cuda'));
-		}
-		if (options.trt) {
-			await copyLib(dynamicLibName('onnxruntime_providers_tensorrt'));
-		}
-		if (options.rocm) {
-			await copyLib(dynamicLibName('onnxruntime_providers_rocm'));
-		}
-		
-		if (options.webgpu) {
-			if (platform === 'win32') {
-				await copyLib(dynamicLibName('dxcompiler'));
-				await copyLib(dynamicLibName('dxil'));
-			}
-			await copyLib(dynamicLibName('webgpu_dawn'));
-		}
+		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`;
+		await $`cmake --build build -j4`;
+		await $`cmake --install build`;
 	})
 	.parse(Deno.args);

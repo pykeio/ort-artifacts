@@ -116,7 +116,7 @@ jobs:
             args: "--webgpu"
             static: true
             feature-set: wgpu
-            runs-on: windows-2022
+            runs-on: windows-2025
           - target: aarch64-pc-windows-msvc
             args: "-A aarch64 --directml"
             static: true
@@ -145,6 +145,7 @@ jobs:
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
       - uses: actions/checkout@v4
+      - uses: seanmiddleditch/gha-setup-ninja@v6
       - uses: pykeio/cuda-toolkit@v0.2.18
         if: matrix.cuda-version && runner.os != 'macOS'
         with:

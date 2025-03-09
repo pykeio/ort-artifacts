@@ -150,13 +150,35 @@ function(bundle_static_library bundled_target_name)
 endfunction()
 bundle_static_library(${PROJECT_NAME} onnxruntime)
 
-install(
-    FILES
-    ${ONNXRUNTIME_SOURCE_DIR}/include/onnxruntime/core/session/onnxruntime_c_api.h
-    ${ONNXRUNTIME_SOURCE_DIR}/include/onnxruntime/core/session/onnxruntime_cxx_api.h
-    ${ONNXRUNTIME_SOURCE_DIR}/include/onnxruntime/core/session/onnxruntime_cxx_inline.h
-    TYPE INCLUDE
-)
+if(onnxruntime_USE_CUDA)
+    add_dependencies(onnxruntime onnxruntime_providers_cuda)
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_cuda DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+if(onnxruntime_USE_TENSORRT)
+    add_dependencies(onnxruntime onnxruntime_providers_tensorrt)
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_tensorrt DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+if(onnxruntime_USE_DNNL)
+    add_dependencies(onnxruntime onnxruntime_providers_dnnl)
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_dnnl DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+if(onnxruntime_USE_ROCM)
+    add_dependencies(onnxruntime onnxruntime_providers_rocm)
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_rocm DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+if(onnxruntime_USE_WEBGPU)
+    # both of these are required for some reason, LIBRARY RUNTIME doesn't work and it still copies to /bin, but at least it
+    # *also* copies to /lib with this
+    install(TARGETS webgpu_dawn LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(IMPORTED_RUNTIME_ARTIFACTS webgpu_dawn DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    if(WIN32)
+        install(FILES "$<TARGET_FILE_DIR:dxcompiler>/dxil.dll" "$<TARGET_FILE_DIR:dxcompiler>/dxcompiler.dll" TYPE LIB)
+    endif()
+endif()
 
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${PROJECT_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX}
