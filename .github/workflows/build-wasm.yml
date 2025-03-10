@@ -26,8 +26,8 @@ jobs:
           deno-version: v2.x
       - name: Run builder
         run:
-          deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} -W --webgpu -s --emsdk ${{ inputs.emsdk-version }}
+          deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} -W -s --emsdk ${{ inputs.emsdk-version }}
       - uses: actions/upload-artifact@v4
         with:
-          name: ortrs-pkort_static-v${{ inputs.onnxruntime-version }}-wasm32-unknown-unknown
+          name: ortrs_static-v${{ inputs.onnxruntime-version }}-wasm32-unknown-emscripten
           path: artifact
