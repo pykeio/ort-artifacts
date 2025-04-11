@@ -26,6 +26,7 @@ await new Command()
 	.option('--xnnpack', 'Enable XNNPACK EP')
 	.option('--rocm', 'Enable ROCm EP')
 	.option('--webgpu', 'Enable WebGPU EP')
+	.option('--openvino', 'Enable OpenVINO EP')
 	.option('-N, --ninja', 'build with ninja')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.option('-W, --wasm', 'Compile for WebAssembly (with patches)')
@@ -151,6 +152,14 @@ await new Command()
 		if (options.xnnpack) {
 			args.push('-Donnxruntime_USE_XNNPACK=ON');
 		}
+		if (options.openvino) {
+			args.push('-Donnxruntime_DISABLE_RTTI=OFF');
+			args.push('-Donnxruntime_USE_OPENVINO=ON');
+			args.push('-Donnxruntime_USE_OPENVINO_CPU=ON');
+			args.push('-Donnxruntime_USE_OPENVINO_GPU=ON');
+			args.push('-Donnxruntime_USE_OPENVINO_NPU=ON');
+			// args.push('-Donnxruntime_USE_OPENVINO_INTERFACE=ON');
+		}
 
 		if (!options.wasm) {
 			if (platform === 'darwin') {
@@ -207,6 +216,7 @@ await new Command()
 		}
 
 		args.push('-Donnxruntime_BUILD_UNIT_TESTS=OFF');
+		args.push('-Donnxruntime_USE_KLEIDIAI=ON');
 
 		if (compilerFlags.length > 0) {
 			const allFlags = compilerFlags.map(def => `-D${def}`).join(' ');
