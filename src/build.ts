@@ -86,6 +86,7 @@ await new Command()
 				args.push('-Donnxruntime_USE_TENSORRT_BUILTIN_PARSER=ON');
 			}
 
+			const cudaFlags: string[] = [];
 			switch (platform) {
 				case 'linux': {
 					const cudnnArchiveStream = await fetch(Deno.env.get('CUDNN_URL')!).then(c => c.body!);
@@ -106,7 +107,7 @@ await new Command()
 				}
 				case 'win32': {
 					// nvcc < 12.4 throws an error with VS 17.10
-					args.push('-DCMAKE_CUDA_FLAGS_INIT=-allow-unsupported-compiler');
+					cudaFlags.push('-allow-unsupported-compiler');
 
 					// windows should ship with bsdtar which supports extracting .zips
 					const cudnnArchiveStream = await fetch(Deno.env.get('CUDNN_URL')!).then(c => c.body!);
@@ -125,6 +126,12 @@ await new Command()
 
 					break;
 				}
+			}
+
+			args.push('-DCMAKE_CUDA_ARCHITECTURES=60;61;70;75;80');
+			cudaFlags.push('-compress-mode=size');
+			if (cudaFlags.length) {
+				args.push(`-DCMAKE_CUDA_FLAGS_INIT=${cudaFlags.join(' ')}`);
 			}
 		}
 
