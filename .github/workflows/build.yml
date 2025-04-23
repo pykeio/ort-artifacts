@@ -150,6 +150,8 @@ jobs:
         if: matrix.cuda-version && runner.os != 'macOS'
         with:
           cuda: ${{ matrix.cuda-version }}
+          method: network
+          sub-packages: '["nvcc"]'
       # - name: Install ROCm
       #   if: matrix.rocm && runner.os == 'Linux'
       #   run: |
