@@ -151,7 +151,7 @@ jobs:
         with:
           cuda: ${{ matrix.cuda-version }}
           method: network
-          sub-packages: '["nvcc"]'
+          sub-packages: '["nvcc", "cudart", "cublas_dev", "nvrtc_dev"]'
       # - name: Install ROCm
       #   if: matrix.rocm && runner.os == 'Linux'
       #   run: |
