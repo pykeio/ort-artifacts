@@ -20,6 +20,7 @@ await new Command()
 	.option('-s, --static', 'Build static library')
 	.option('--cuda', 'Enable CUDA EP')
 	.option('--trt', 'Enable TensorRT EP', { depends: [ 'cuda' ] })
+	.option('--nvrtx', 'Enable NV TensorRT RTX EP', { depends: [ 'cuda' ] })
 	.option('--directml', 'Enable DirectML EP')
 	.option('--coreml', 'Enable CoreML EP')
 	.option('--dnnl', 'Enable DNNL EP')
@@ -81,10 +82,6 @@ await new Command()
 			args.push('-Donnxruntime_USE_CUDA=ON');
 			// https://github.com/microsoft/onnxruntime/pull/20768
 			args.push('-Donnxruntime_NVCC_THREADS=1');
-			if (options.trt) {
-				args.push('-Donnxruntime_USE_TENSORRT=ON');
-				args.push('-Donnxruntime_USE_TENSORRT_BUILTIN_PARSER=ON');
-			}
 
 			const cudaFlags: string[] = [];
 			switch (platform) {
@@ -95,14 +92,6 @@ await new Command()
 					await $`tar xvJC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
 					args.push(`-Donnxruntime_CUDNN_HOME=${cudnnOutPath}`);
 					
-					if (options.trt) {
-						const trtArchiveStream = await fetch(Deno.env.get('TENSORRT_URL')!).then(c => c.body!);
-						const trtOutPath = join(root, 'tensorrt');
-						await Deno.mkdir(trtOutPath);
-						await $`tar xvzC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
-						args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
-					}
-
 					break;
 				}
 				case 'win32': {
@@ -116,14 +105,6 @@ await new Command()
 					await $`tar xvC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
 					args.push(`-Donnxruntime_CUDNN_HOME=${cudnnOutPath}`);
 					
-					if (options.trt) {
-						const trtArchiveStream = await fetch(Deno.env.get('TENSORRT_URL')!).then(c => c.body!);
-						const trtOutPath = join(root, 'tensorrt');
-						await Deno.mkdir(trtOutPath);
-						await $`tar xvC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
-						args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
-					}
-
 					break;
 				}
 			}
@@ -132,6 +113,30 @@ await new Command()
 			cudaFlags.push('-compress-mode=size');
 			if (cudaFlags.length) {
 				args.push(`-DCMAKE_CUDA_FLAGS_INIT=${cudaFlags.join(' ')}`);
+			}
+		}
+
+		if (options.trt) {
+			args.push('-Donnxruntime_USE_TENSORRT=ON');
+			args.push('-Donnxruntime_USE_TENSORRT_BUILTIN_PARSER=ON');
+		}
+		if (options.nvrtx) {
+			args.push('-Donnxruntime_USE_NV=ON');
+		}
+
+		if (options.trt || options.nvrtx) {
+			if (platform === 'linux') {
+				const trtArchiveStream = await fetch(Deno.env.get('TENSORRT_URL')!).then(c => c.body!);
+				const trtOutPath = join(root, 'tensorrt');
+				await Deno.mkdir(trtOutPath);
+				await $`tar xvzC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
+				args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
+			} else if (platform === 'win32') {
+				const trtArchiveStream = await fetch(Deno.env.get('TENSORRT_URL')!).then(c => c.body!);
+				const trtOutPath = join(root, 'tensorrt');
+				await Deno.mkdir(trtOutPath);
+				await $`tar xvC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
+				args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
 			}
 		}
 
