@@ -151,6 +151,7 @@ jobs:
         with:
           cuda: ${{ matrix.cuda-version }}
           method: network
+          use-github-cache: false
           # sub-packages: '["nvcc", "cudart", "cublas", "nvrtc"]'
       # - name: Install ROCm
       #   if: matrix.rocm && runner.os == 'Linux'
@@ -164,9 +165,6 @@ jobs:
       - name: Run builder
         run:
           deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} ${{ matrix.static && '-s' || '' }} ${{ matrix.args }}
-        env:
-          CUDNN_URL: ${{ matrix.cuda-version && (runner.os == 'Linux' && secrets.CUDNN9_2_CUDA12_LINUX_URL || secrets.CUDNN9_2_CUDA12_WINDOWS_URL) }}
-          TENSORRT_URL: ${{ matrix.cuda-version && (runner.os == 'Linux' && secrets.TENSORRT10_0_CUDA12_LINUX_URL || secrets.TENSORRT10_0_CUDA12_WINDOWS_URL) }}
       - uses: actions/upload-artifact@v4
         with:
           name: ortrs_${{ matrix.static && 'static' || 'dylib' }}${{ matrix.feature-set != 'none' && format('_{0}', matrix.feature-set) || '' }}-v${{ inputs.onnxruntime-version }}-${{ matrix.target }}
