@@ -11,6 +11,13 @@ const platform: 'win32' | 'darwin' | 'linux' = getPlatform();
 
 const TARGET_ARCHITECTURE_TYPE = new EnumType([ 'x86_64', 'aarch64' ]);
 
+const CUDNN_ARCHIVE_URL = platform === 'linux'
+	? 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-9.10.0.56_cuda12-archive.tar.xz'
+	: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.10.0.56_cuda12-archive.zip';
+const TENSORRT_ARCHIVE_URL = platform === 'linux'
+	? 'https://developer.download.nvidia.com/compute/machine-learning/tensorrt/10.10.0/tars/TensorRT-10.10.0.31.Linux.x86_64-gnu.cuda-12.9.tar.gz'
+	: 'https://developer.download.nvidia.com/compute/machine-learning/tensorrt/10.10.0/zip/TensorRT-10.10.0.31.Windows.win10.cuda-12.9.zip';
+
 await new Command()
 	.name('ort-artifact')
 	.version('0.1.0')
@@ -83,30 +90,16 @@ await new Command()
 			// https://github.com/microsoft/onnxruntime/pull/20768
 			args.push('-Donnxruntime_NVCC_THREADS=1');
 
-			const cudaFlags: string[] = [];
-			switch (platform) {
-				case 'linux': {
-					const cudnnArchiveStream = await fetch(Deno.env.get('CUDNN_URL')!).then(c => c.body!);
-					const cudnnOutPath = join(root, 'cudnn');
-					await Deno.mkdir(cudnnOutPath);
-					await $`tar xvJC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
-					args.push(`-Donnxruntime_CUDNN_HOME=${cudnnOutPath}`);
-					
-					break;
-				}
-				case 'win32': {
-					// nvcc < 12.4 throws an error with VS 17.10
-					cudaFlags.push('-allow-unsupported-compiler');
+			const cudnnArchiveStream = await fetch(CUDNN_ARCHIVE_URL).then(c => c.body!);
+			const cudnnOutPath = join(root, 'cudnn');
+			await Deno.mkdir(cudnnOutPath);
+			await $`tar xvJC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
+			args.push(`-Donnxruntime_CUDNN_HOME=${cudnnOutPath}`);
 
-					// windows should ship with bsdtar which supports extracting .zips
-					const cudnnArchiveStream = await fetch(Deno.env.get('CUDNN_URL')!).then(c => c.body!);
-					const cudnnOutPath = join(root, 'cudnn');
-					await Deno.mkdir(cudnnOutPath);
-					await $`tar xvC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
-					args.push(`-Donnxruntime_CUDNN_HOME=${cudnnOutPath}`);
-					
-					break;
-				}
+			const cudaFlags: string[] = [];
+			if (platform === 'win32') {
+				// nvcc < 12.4 throws an error with VS 17.10
+				cudaFlags.push('-allow-unsupported-compiler');
 			}
 
 			args.push('-DCMAKE_CUDA_ARCHITECTURES=60;61;70;75;80');
@@ -125,19 +118,11 @@ await new Command()
 		}
 
 		if (options.trt || options.nvrtx) {
-			if (platform === 'linux') {
-				const trtArchiveStream = await fetch(Deno.env.get('TENSORRT_URL')!).then(c => c.body!);
-				const trtOutPath = join(root, 'tensorrt');
-				await Deno.mkdir(trtOutPath);
-				await $`tar xvzC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
-				args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
-			} else if (platform === 'win32') {
-				const trtArchiveStream = await fetch(Deno.env.get('TENSORRT_URL')!).then(c => c.body!);
-				const trtOutPath = join(root, 'tensorrt');
-				await Deno.mkdir(trtOutPath);
-				await $`tar xvC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
-				args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
-			}
+			const trtArchiveStream = await fetch(TENSORRT_ARCHIVE_URL).then(c => c.body!);
+			const trtOutPath = join(root, 'tensorrt');
+			await Deno.mkdir(trtOutPath);
+			await $`tar xvzC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
+			args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
 		}
 
 		if (platform === 'win32' && options.directml) {
