@@ -1,0 +1,24 @@
+diff --git a/onnxruntime/core/providers/cuda/cuda_execution_provider.cc b/onnxruntime/core/providers/cuda/cuda_execution_provider.cc
+index 635eb67..d018d8d 100644
+--- a/onnxruntime/core/providers/cuda/cuda_execution_provider.cc
++++ b/onnxruntime/core/providers/cuda/cuda_execution_provider.cc
+@@ -2472,7 +2472,6 @@ void InitializeRegistry() {
+ }
+ 
+ void DeleteRegistry() {
+-  s_kernel_registry.reset();
+ }
+ 
+ std::shared_ptr<KernelRegistry> CUDAExecutionProvider::GetKernelRegistry() const {
+diff --git a/onnxruntime/core/providers/tensorrt/tensorrt_execution_provider.cc b/onnxruntime/core/providers/tensorrt/tensorrt_execution_provider.cc
+index ded135b..39fdf2e 100644
+--- a/onnxruntime/core/providers/tensorrt/tensorrt_execution_provider.cc
++++ b/onnxruntime/core/providers/tensorrt/tensorrt_execution_provider.cc
+@@ -435,7 +435,6 @@ void InitializeRegistry() {
+ }
+ 
+ void DeleteRegistry() {
+-  s_kernel_registry.reset();
+ }
+ 
+ std::shared_ptr<KernelRegistry> TensorrtExecutionProvider::GetKernelRegistry() const {
