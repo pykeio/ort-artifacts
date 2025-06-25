@@ -38,7 +38,7 @@ await new Command()
 	.option('-N, --ninja', 'build with ninja')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.option('-W, --wasm', 'Compile for WebAssembly (with patches)')
-	.option('--emsdk <version:string>', 'Emsdk version to use for WebAssembly build', { default: '4.0.3' })
+	.option('--emsdk <version:string>', 'Emsdk version to use for WebAssembly build', { default: '4.0.4' })
 	.action(async (options, ..._) => {
 		const root = Deno.cwd();
 

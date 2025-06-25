@@ -10,7 +10,7 @@ on:
         type: string
         description: "Version of emsdk to use"
         required: true
-        default: '4.0.3'
+        default: '4.0.4'
 jobs:
   build:
     name: Build
