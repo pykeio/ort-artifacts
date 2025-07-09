@@ -37,8 +37,6 @@ await new Command()
 	.option('--openvino', 'Enable OpenVINO EP')
 	.option('-N, --ninja', 'build with ninja')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
-	.option('-W, --wasm', 'Compile for WebAssembly (with patches)')
-	.option('--emsdk <version:string>', 'Emsdk version to use for WebAssembly build', { default: '4.0.4' })
 	.action(async (options, ..._) => {
 		const root = Deno.cwd();
 
@@ -60,27 +58,6 @@ await new Command()
 
 			await $`git apply ${join(patchDir, patchFile.name)} --ignore-whitespace --recount --verbose`;
 			console.log(`applied ${patchFile.name}`);
-		}
-
-		if (options.wasm) {
-			const args = [];
-			if (options.webgpu) {
-				args.push('--use_webgpu');
-			}
-			// there's no WAY im gonna try to wrestle with CMake on this one
-			await $`bash ./build.sh --config Release --build_wasm_static_lib --enable_wasm_simd --enable_wasm_threads --skip_tests --disable_wasm_exception_catching --disable_rtti --parallel --emsdk_version ${options.emsdk} ${args}`;
-
-			const buildRoot = join(onnxruntimeRoot, 'build', 'Linux', 'Release');
-
-			const artifactOutDir = join(root, 'artifact');
-			await Deno.mkdir(artifactOutDir);
-	
-			const artifactLibDir = join(artifactOutDir, 'onnxruntime', 'lib');
-			await Deno.mkdir(artifactLibDir, { recursive: true });
-
-			await Deno.copyFile(join(buildRoot, 'libonnxruntime_webassembly.a'), join(artifactLibDir, 'libonnxruntime.a'));
-
-			return;
 		}
 
 		const compilerFlags = [];
@@ -138,10 +115,8 @@ await new Command()
 		if (options.webgpu) {
 			args.push('-Donnxruntime_USE_WEBGPU=ON');
 			args.push('-Donnxruntime_ENABLE_DELAY_LOADING_WIN_DLLS=OFF');
-			if (!options.wasm) {
-				args.push('-Donnxruntime_USE_EXTERNAL_DAWN=OFF');
-				args.push('-Donnxruntime_BUILD_DAWN_MONOLITHIC_LIBRARY=ON');
-			}
+			args.push('-Donnxruntime_USE_EXTERNAL_DAWN=OFF');
+			args.push('-Donnxruntime_BUILD_DAWN_MONOLITHIC_LIBRARY=ON');
 		}
 		if (options.dnnl) {
 			args.push('-Donnxruntime_USE_DNNL=ON');
@@ -158,25 +133,23 @@ await new Command()
 			// args.push('-Donnxruntime_USE_OPENVINO_INTERFACE=ON');
 		}
 
-		if (!options.wasm) {
-			if (platform === 'darwin') {
-				if (options.arch === 'aarch64') {
-					args.push('-DCMAKE_OSX_ARCHITECTURES=arm64');
-				} else {
-					args.push('-DCMAKE_OSX_ARCHITECTURES=x86_64');
-				}
+		if (platform === 'darwin') {
+			if (options.arch === 'aarch64') {
+				args.push('-DCMAKE_OSX_ARCHITECTURES=arm64');
 			} else {
-				if (options.arch === 'aarch64' && arch !== 'arm64') {
-					args.push('-Donnxruntime_CROSS_COMPILING=ON');
-					switch (platform) {
-						case 'win32':
-							args.push('-A', 'ARM64');
-							compilerFlags.push('_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS');
-							break;
-						case 'linux':
-							args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(root, 'toolchains', 'aarch64-unknown-linux-gnu.cmake')}`);
-							break;
-					}
+				args.push('-DCMAKE_OSX_ARCHITECTURES=x86_64');
+			}
+		} else {
+			if (options.arch === 'aarch64' && arch !== 'arm64') {
+				args.push('-Donnxruntime_CROSS_COMPILING=ON');
+				switch (platform) {
+					case 'win32':
+						args.push('-A', 'ARM64');
+						compilerFlags.push('_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS');
+						break;
+					case 'linux':
+						args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(root, 'toolchains', 'aarch64-unknown-linux-gnu.cmake')}`);
+						break;
 				}
 			}
 		}
