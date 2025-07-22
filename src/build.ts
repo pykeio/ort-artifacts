@@ -41,14 +41,27 @@ await new Command()
 		const root = Deno.cwd();
 
 		const onnxruntimeRoot = join(root, 'onnxruntime');
-		if (!await exists(onnxruntimeRoot)) {
+		const isExists = await exists(onnxruntimeRoot)
+		let isBranchCorrect = false;
+		if (isExists) {
+			$.cd(onnxruntimeRoot);
+			const currentBranch = (await $`git branch --show-current`.stdout("piped")).stdout.trim()
+			isBranchCorrect = currentBranch === `rel-${options.upstreamVersion}`;
+			$.cd(root);
+			
+			if (!isBranchCorrect) {
+				console.log(`Removing onnxruntime directory because branch is incorrect: ${onnxruntimeRoot}, current branch: ${currentBranch}, expected branch: rel-${options.upstreamVersion}`);
+				await Deno.remove(onnxruntimeRoot, { recursive: true });
+			}
+		}
+		if (!isExists || !isBranchCorrect) {
 			await $`git clone https://github.com/microsoft/onnxruntime --recursive --single-branch --depth 1 --branch rel-${options.upstreamVersion}`;
 		}
 
 		$.cd(onnxruntimeRoot);
 
 		await $`git reset --hard HEAD`;
-		await $`git clean -fd`;
+		await $`git clean -fdx`;
 
 		const patchDir = join(root, 'src', 'patches', 'all');
 		for await (const patchFile of Deno.readDir(patchDir)) {
@@ -67,10 +80,23 @@ await new Command()
 			// https://github.com/microsoft/onnxruntime/pull/20768
 			args.push('-Donnxruntime_NVCC_THREADS=1');
 
-			const cudnnArchiveStream = await fetch(CUDNN_ARCHIVE_URL).then(c => c.body!);
 			const cudnnOutPath = join(root, 'cudnn');
-			await Deno.mkdir(cudnnOutPath);
-			await $`tar xvJC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
+			let should_skip = await exists(cudnnOutPath);
+			if (should_skip) {
+				// Check dir whether is empty
+				const files = await Array.fromAsync(Deno.readDir(cudnnOutPath));
+				if (files.length === 0) {
+					await $`rm -rf ${cudnnOutPath}`;
+					should_skip = false;
+				}
+			}
+
+			if (!should_skip) {
+				const cudnnArchiveStream = await fetch(CUDNN_ARCHIVE_URL).then(c => c.body!);
+				await Deno.mkdir(cudnnOutPath);
+				await $`tar xvJC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
+			}
+			
 			args.push(`-Donnxruntime_CUDNN_HOME=${cudnnOutPath}`);
 
 			const cudaFlags: string[] = [];
