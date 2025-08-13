@@ -105,7 +105,7 @@ await new Command()
 				cudaFlags.push('-allow-unsupported-compiler');
 			}
 
-			args.push('-DCMAKE_CUDA_ARCHITECTURES=60;61;70;75;80');
+			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
 			cudaFlags.push('-compress-mode=size');
 			if (cudaFlags.length) {
 				args.push(`-DCMAKE_CUDA_FLAGS_INIT=${cudaFlags.join(' ')}`);
