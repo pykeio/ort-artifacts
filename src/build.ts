@@ -25,6 +25,9 @@ await new Command()
 	.option('-v, --upstream-version <version:string>', 'Exact version of upstream package', { required: true })
 	.option('-t, --training', 'Enable Training API')
 	.option('-s, --static', 'Build static library')
+	.option('--iphoneos', 'Target iOS / iPadOS')
+	.option('--iphonesimulator', 'Target iOS / iPadOS simulator')
+	.option('--android', 'Target Android')
 	.option('--cuda', 'Enable CUDA EP')
 	.option('--trt', 'Enable TensorRT EP', { depends: [ 'cuda' ] })
 	.option('--nvrtx', 'Enable NV TensorRT RTX EP', { depends: [ 'cuda' ] })
@@ -35,6 +38,7 @@ await new Command()
 	.option('--rocm', 'Enable ROCm EP')
 	.option('--webgpu', 'Enable WebGPU EP')
 	.option('--openvino', 'Enable OpenVINO EP')
+	.option('--nnapi', 'Enable NNAPI EP')
 	.option('-N, --ninja', 'build with ninja')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.action(async (options, ..._) => {
@@ -75,6 +79,27 @@ await new Command()
 
 		const compilerFlags = [];
 		const args = [];
+
+		// Build for iOS on macOS.
+		if (platform === 'darwin' && (options.iphoneos || options.iphonesimulator)) {
+			args.push(`-DCMAKE_OSX_DEPLOYMENT_TARGET=${Deno.env.get("IPHONEOS_DEPLOYMENT_TARGET")}`)
+			args.push('-DCMAKE_TOOLCHAIN_FILE=../cmake/onnxruntime_ios.toolchain.cmake');
+			if(options.iphoneos) {
+				args.push('-DCMAKE_OSX_SYSROOT=iphoneos');
+			} else {
+				args.push('-DCMAKE_OSX_SYSROOT=iphonesimulator');
+			}
+		}
+
+		// Build for Android on Linux.
+		if (platform === 'linux' && options.android) {
+			// ANDROID_NDK_HOME and ANDROID_SDK_ROOT are expected to be set in the environment.
+			args.push(`-DANDROID_PLATFORM=android-${Deno.env.get("ANDROID_API")}`);
+			args.push('-DANDROID_ABI=arm64-v8a');
+			args.push('-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=false');
+			args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(Deno.env.get('ANDROID_NDK_HOME'), 'build', 'cmake', 'android.toolchain.cmake')}`);
+		}
+
 		if (options.cuda) {
 			args.push('-Donnxruntime_USE_CUDA=ON');
 			// https://github.com/microsoft/onnxruntime/pull/20768
@@ -157,6 +182,9 @@ await new Command()
 			args.push('-Donnxruntime_USE_OPENVINO_GPU=ON');
 			args.push('-Donnxruntime_USE_OPENVINO_NPU=ON');
 			// args.push('-Donnxruntime_USE_OPENVINO_INTERFACE=ON');
+		}
+		if(options.nnapi) {
+			args.push('-Donnxruntime_USE_NNAPI_BUILTIN=ON');
 		}
 
 		if (platform === 'darwin') {
