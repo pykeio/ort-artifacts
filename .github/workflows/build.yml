@@ -152,7 +152,6 @@ jobs:
       - name: Remove unnecessary software
         if: runner.os == 'Linux'
         run: |
-          sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
