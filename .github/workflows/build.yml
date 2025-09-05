@@ -155,6 +155,10 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
+      - name: Remove unnecessary software (non-Android)
+        if: runner.os == 'Linux' && matrix.target != 'aarch64-linux-android'
+        run: |
+          sudo rm -rf /usr/local/lib/android
       - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@v6
       - uses: Jimver/cuda-toolkit@v0.2.23
