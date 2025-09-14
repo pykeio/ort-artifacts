@@ -13,6 +13,8 @@ env:
   NODE_VERSION: '18'
   XCODE_VERSION: '14.3.1'
   MACOSX_DEPLOYMENT_TARGET: '13.3'
+  IPHONEOS_DEPLOYMENT_TARGET: '15.1' # See: https://github.com/microsoft/onnxruntime/releases/tag/v1.21.0
+  ANDROID_API: '24' # See: https://github.com/microsoft/onnxruntime/releases/tag/v1.21.0
 jobs:
   build:
     name: Build
@@ -127,18 +129,36 @@ jobs:
             static: true
             feature-set: none
             runs-on: windows-2022
+          - target: aarch64-apple-ios
+            args: "-A aarch64 --iphoneos --xnnpack --coreml -N"
+            static: true
+            feature-set: none
+            runs-on: macos-13
+          - target: aarch64-apple-ios-sim
+            args: "-A aarch64 --iphonesimulator --xnnpack --coreml -N"
+            static: true
+            feature-set: none
+            runs-on: macos-13
+          - target: aarch64-linux-android
+            args: "-A aarch64 --android --xnnpack --nnapi -N"
+            static: true
+            feature-set: none
+            runs-on: ubuntu-22.04
     steps:
       - name: Install cross-compile tools
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'aarch64-linux-android'
         run: |
           sudo apt update && sudo apt install -y gcc make gcc-11-aarch64-linux-gnu g++-11-aarch64-linux-gnu binutils-aarch64-linux-gnu
       - name: Remove unnecessary software
         if: runner.os == 'Linux'
         run: |
-          sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
+      - name: Remove unnecessary software (non-Android)
+        if: runner.os == 'Linux' && matrix.target != 'aarch64-linux-android'
+        run: |
+          sudo rm -rf /usr/local/lib/android
       - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@v6
       - uses: Jimver/cuda-toolkit@v0.2.23
@@ -154,10 +174,25 @@ jobs:
       #     wget https://repo.radeon.com/amdgpu-install/6.1.1/ubuntu/jammy/amdgpu-install_6.1.60101-1_all.deb
       #     sudo apt install ./amdgpu-install_6.1.60101-1_all.deb -y
       #     DEBIAN_FRONTEND=noninteractive amdgpu-install --accept-eula -y --usecase=rocm,hiplibsdk --no-dkms
+      - uses: actions/setup-java@v4
+        if: matrix.target == 'aarch64-linux-android'
+        with:
+          java-version: "17"
+          distribution: "temurin"
+      - uses: android-actions/setup-android@v3
+        if: matrix.target == 'aarch64-linux-android'
+      - uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        if: matrix.target == 'aarch64-linux-android'
+        with:
+          add-to-path: false
+          ndk-version: r28
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
       - name: Run builder
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run:
           deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} ${{ matrix.static && '-s' || '' }} ${{ matrix.args }}
       - uses: actions/upload-artifact@v4
