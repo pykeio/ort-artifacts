@@ -12,7 +12,7 @@ env:
   PYTHON_VERSION: '3.10'
   NODE_VERSION: '18'
   XCODE_VERSION: '14.3.1'
-  MACOSX_DEPLOYMENT_TARGET: '13.3'
+  MACOSX_DEPLOYMENT_TARGET: '13.4'
   IPHONEOS_DEPLOYMENT_TARGET: '15.1' # See: https://github.com/microsoft/onnxruntime/releases/tag/v1.21.0
   ANDROID_API: '24' # See: https://github.com/microsoft/onnxruntime/releases/tag/v1.21.0
 jobs:
