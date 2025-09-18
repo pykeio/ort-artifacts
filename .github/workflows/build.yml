@@ -49,12 +49,7 @@ jobs:
             args: "-t --coreml -A aarch64 --xnnpack -N"
             static: true
             feature-set: train
-            runs-on: macos-13
-          - target: x86_64-apple-darwin
-            args: "-t --coreml --xnnpack -N"
-            static: true
-            feature-set: train
-            runs-on: macos-13
+            runs-on: macos-15
           - target: x86_64-pc-windows-msvc
             args: "-t --directml --cuda --trt --xnnpack"
             static: true
@@ -102,12 +97,7 @@ jobs:
             args: "--coreml -A aarch64 --xnnpack -N"
             static: true
             feature-set: none
-            runs-on: macos-13
-          - target: x86_64-apple-darwin
-            args: "--coreml --xnnpack -N"
-            static: true
-            feature-set: none
-            runs-on: macos-13
+            runs-on: macos-15
           - target: x86_64-pc-windows-msvc
             args: "--directml --cuda --trt --xnnpack"
             static: true
@@ -133,12 +123,12 @@ jobs:
             args: "-A aarch64 --iphoneos --xnnpack --coreml -N"
             static: true
             feature-set: none
-            runs-on: macos-13
+            runs-on: macos-15
           - target: aarch64-apple-ios-sim
             args: "-A aarch64 --iphonesimulator --xnnpack --coreml -N"
             static: true
             feature-set: none
-            runs-on: macos-13
+            runs-on: macos-15
           - target: aarch64-linux-android
             args: "-A aarch64 --android --xnnpack --nnapi -N"
             static: true

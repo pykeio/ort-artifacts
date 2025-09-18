@@ -25,22 +25,12 @@ jobs:
             args: "-t --coreml -A aarch64 --xnnpack -N"
             static: true
             feature-set: train
-            runs-on: macos-13
-          - target: x86_64-apple-darwin
-            args: "-t --coreml --xnnpack -N"
-            static: true
-            feature-set: train
-            runs-on: macos-13
+            runs-on: macos-15
           - target: aarch64-apple-darwin
             args: "--coreml -A aarch64 --xnnpack -N"
             static: true
             feature-set: none
-            runs-on: macos-13
-          - target: x86_64-apple-darwin
-            args: "--coreml --xnnpack -N"
-            static: true
-            feature-set: none
-            runs-on: macos-13
+            runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@v6
