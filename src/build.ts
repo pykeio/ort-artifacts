@@ -168,6 +168,7 @@ await new Command()
 			args.push('-Donnxruntime_ENABLE_DELAY_LOADING_WIN_DLLS=OFF');
 			args.push('-Donnxruntime_USE_EXTERNAL_DAWN=OFF');
 			args.push('-Donnxruntime_BUILD_DAWN_MONOLITHIC_LIBRARY=ON');
+			args.push('-Donnxruntime_WGSL_TEMPLATE=static')
 		}
 		if (options.dnnl) {
 			args.push('-Donnxruntime_USE_DNNL=ON');
