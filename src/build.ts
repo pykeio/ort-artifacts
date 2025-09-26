@@ -17,6 +17,9 @@ const CUDNN_ARCHIVE_URL = platform === 'linux'
 const TENSORRT_ARCHIVE_URL = platform === 'linux'
 	? 'https://developer.download.nvidia.com/compute/machine-learning/tensorrt/10.10.0/tars/TensorRT-10.10.0.31.Linux.x86_64-gnu.cuda-12.9.tar.gz'
 	: 'https://developer.download.nvidia.com/compute/machine-learning/tensorrt/10.10.0/zip/TensorRT-10.10.0.31.Windows.win10.cuda-12.9.zip';
+const TENSORRT_RTX_ARCHIVE_URL = platform === 'linux'
+	? 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.1/TensorRT-RTX-1.1.1.26.Linux.x86_64-gnu.cuda-12.9.tar.gz'
+	: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.1/TensorRT-RTX-1.1.1.26.Windows.win10.cuda-12.9.zip';
 
 await new Command()
 	.name('ort-artifact')
@@ -143,14 +146,22 @@ await new Command()
 		}
 		if (options.nvrtx) {
 			args.push('-Donnxruntime_USE_NV=ON');
+			args.push('-Donnxruntime_USE_TENSORRT_BUILTIN_PARSER=ON');
 		}
 
-		if (options.trt || options.nvrtx) {
+		if (options.trt) {
 			const trtArchiveStream = await fetch(TENSORRT_ARCHIVE_URL).then(c => c.body!);
 			const trtOutPath = join(root, 'tensorrt');
 			await Deno.mkdir(trtOutPath);
 			await $`tar xvzC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
 			args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
+		}
+		if (options.nvrtx) {
+			const trtxArchiveStream = await fetch(TENSORRT_RTX_ARCHIVE_URL).then(c => c.body!);
+			const trtxOutPath = join(root, 'tensorrt');
+			await Deno.mkdir(trtxOutPath);
+			await $`tar xvzC ${trtxOutPath} --strip-components=1 -f -`.stdin(trtxArchiveStream);
+			args.push(`-Donnxruntime_TENSORRT_RTX_HOME=${trtxOutPath}`);
 		}
 
 		if (platform === 'win32' && options.directml) {
