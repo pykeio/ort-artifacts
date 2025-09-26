@@ -97,7 +97,7 @@ await new Command()
 			args.push(`-DANDROID_PLATFORM=android-${Deno.env.get("ANDROID_API")}`);
 			args.push('-DANDROID_ABI=arm64-v8a');
 			args.push('-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=false');
-			args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(Deno.env.get('ANDROID_NDK_HOME'), 'build', 'cmake', 'android.toolchain.cmake')}`);
+			args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(Deno.env.get('ANDROID_NDK_HOME')!, 'build', 'cmake', 'android.toolchain.cmake')}`);
 		}
 
 		if (options.cuda) {
