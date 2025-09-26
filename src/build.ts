@@ -241,7 +241,7 @@ await new Command()
 		}
 
 		args.push('-Donnxruntime_BUILD_UNIT_TESTS=OFF');
-		args.push('-Donnxruntime_USE_KLEIDIAI=ON');
+		args.push(`-Donnxruntime_USE_KLEIDIAI=${options.arch === 'aarch64' ? 'ON' : 'OFF'}`);
 		args.push('-Donnxruntime_CLIENT_PACKAGE_BUILD=ON');
 
 		if (compilerFlags.length > 0) {
