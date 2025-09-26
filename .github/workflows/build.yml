@@ -34,7 +34,7 @@ jobs:
             feature-set: train
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "-t --cuda --trt --xnnpack -N"
+            args: "-t --cuda --trt"
             static: true
             feature-set: train,cu12
             cuda-version: '12.8.1'
@@ -77,7 +77,7 @@ jobs:
             feature-set: none
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
-            args: "--cuda --trt --xnnpack -N"
+            args: "--cuda --trt"
             static: true
             feature-set: cu12
             cuda-version: '12.8.1'

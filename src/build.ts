@@ -269,9 +269,9 @@ await new Command()
 		}
 
 		let threads = cpus().length;
-		if (options.cuda || options.trt) {
+		if ((options.cuda || options.trt) && platform === 'linux') {
 			// try to reduce the chance of OOM due to nvcc
-			threads = Math.floor(threads * 0.75);
+			threads = 2;
 		}
 		console.log(`Using ${threads} threads`);
 
