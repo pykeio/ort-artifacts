@@ -273,6 +273,7 @@ await new Command()
 			// try to reduce the chance of OOM due to nvcc
 			threads = Math.floor(threads * 0.75);
 		}
+		console.log(`Using ${threads} threads`);
 
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
 		const buildDir = join(onnxruntimeRoot, 'build');
