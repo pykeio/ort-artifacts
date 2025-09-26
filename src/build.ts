@@ -103,6 +103,7 @@ await new Command()
 			args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(Deno.env.get('ANDROID_NDK_HOME')!, 'build', 'cmake', 'android.toolchain.cmake')}`);
 		}
 
+		const cudaFlags: string[] = [];
 		if (options.cuda) {
 			args.push('-Donnxruntime_USE_CUDA=ON');
 			// https://github.com/microsoft/onnxruntime/pull/20768
@@ -127,17 +128,18 @@ await new Command()
 			
 			args.push(`-Donnxruntime_CUDNN_HOME=${cudnnOutPath}`);
 
-			const cudaFlags: string[] = [];
 			if (platform === 'win32') {
 				// nvcc < 12.4 throws an error with VS 17.10
 				cudaFlags.push('-allow-unsupported-compiler');
 			}
+		}
 
+		if (options.cuda || options.trt || options.nvrtx) {
 			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
 			cudaFlags.push('-compress-mode=size');
-			if (cudaFlags.length) {
-				args.push(`-DCMAKE_CUDA_FLAGS_INIT=${cudaFlags.join(' ')}`);
-			}
+		}
+		if (cudaFlags.length) {
+			args.push(`-DCMAKE_CUDA_FLAGS_INIT=${cudaFlags.join(' ')}`);
 		}
 
 		if (options.trt) {
