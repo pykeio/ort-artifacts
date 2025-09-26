@@ -38,7 +38,6 @@ await new Command()
 	.option('--coreml', 'Enable CoreML EP')
 	.option('--dnnl', 'Enable DNNL EP')
 	.option('--xnnpack', 'Enable XNNPACK EP')
-	.option('--rocm', 'Enable ROCm EP')
 	.option('--webgpu', 'Enable WebGPU EP')
 	.option('--openvino', 'Enable OpenVINO EP')
 	.option('--nnapi', 'Enable NNAPI EP')
@@ -173,10 +172,6 @@ await new Command()
 		if (platform === 'darwin' && options.coreml) {
 			args.push('-Donnxruntime_USE_COREML=ON');
 		}
-		if (platform === 'linux' && options.rocm) {
-			args.push('-Donnxruntime_USE_ROCM=ON');
-			args.push('-Donnxruntime_ROCM_HOME=/opt/rocm');
-		}
 		if (options.webgpu) {
 			args.push('-Donnxruntime_USE_WEBGPU=ON');
 			args.push('-Donnxruntime_ENABLE_DELAY_LOADING_WIN_DLLS=OFF');
@@ -228,7 +223,7 @@ await new Command()
 			args.push('-Donnxruntime_ENABLE_LAZY_TENSOR=OFF');
 		}
 
-		if (options.training || options.rocm) {
+		if (options.training) {
 			args.push('-Donnxruntime_DISABLE_RTTI=OFF');
 		}
 
@@ -269,11 +264,10 @@ await new Command()
 		}
 
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
-		const buildDir = join(onnxruntimeRoot, 'build');
 		const artifactOutDir = join(root, 'artifact', 'onnxruntime');
 
 		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`;
-		await $`cmake --build build --config Release --parallel ${threads}`;
+		await $`cmake --build build --config Release --parallel ${cpus().length}`;
 		await $`cmake --install build`;
 	})
 	.parse(Deno.args);

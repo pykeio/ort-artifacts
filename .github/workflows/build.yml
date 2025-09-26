@@ -39,12 +39,6 @@ jobs:
             feature-set: train,cu12
             cuda-version: '12.9.1'
             runs-on: ubuntu-22.04
-          # - target: x86_64-unknown-linux-gnu
-          #   args: "-t --rocm --xnnpack"
-          #   static: false
-          #   feature-set: train,rocm
-          #   rocm: true
-          #   runs-on: ubuntu-22.04
           - target: aarch64-apple-darwin
             args: "-t --coreml -A aarch64 --xnnpack -N"
             static: true
@@ -87,12 +81,6 @@ jobs:
             static: true
             feature-set: wgpu
             runs-on: ubuntu-22.04
-          # - target: x86_64-unknown-linux-gnu
-          #   args: "--rocm --xnnpack"
-          #   static: false
-          #   feature-set: rocm
-          #   rocm: true
-          #   runs-on: ubuntu-22.04
           - target: aarch64-apple-darwin
             args: "--coreml -A aarch64 --xnnpack -N"
             static: true
@@ -158,12 +146,6 @@ jobs:
           method: network
           use-github-cache: false
           # sub-packages: '["nvcc", "cudart", "cublas", "nvrtc"]'
-      # - name: Install ROCm
-      #   if: matrix.rocm && runner.os == 'Linux'
-      #   run: |
-      #     wget https://repo.radeon.com/amdgpu-install/6.1.1/ubuntu/jammy/amdgpu-install_6.1.60101-1_all.deb
-      #     sudo apt install ./amdgpu-install_6.1.60101-1_all.deb -y
-      #     DEBIAN_FRONTEND=noninteractive amdgpu-install --accept-eula -y --usecase=rocm,hiplibsdk --no-dkms
       - uses: actions/setup-java@v4
         if: matrix.target == 'aarch64-linux-android'
         with:
