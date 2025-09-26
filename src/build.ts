@@ -135,7 +135,7 @@ await new Command()
 		}
 
 		if (options.cuda || options.trt || options.nvrtx) {
-			args.push('-Donnxruntime_NVCC_THREADS=1'); // dont want to OOM
+			args.push('-Donnxruntime_USE_FPA_INTB_GEMM=OFF');
 			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
 			cudaFlags.push('-compress-mode=size');
 		}
@@ -267,13 +267,6 @@ await new Command()
 		if (options.ninja && !(platform === 'win32' && options.arch === 'aarch64')) {
 			args.push('-G', 'Ninja');
 		}
-
-		let threads = cpus().length;
-		if ((options.cuda || options.trt) && platform === 'linux') {
-			// try to reduce the chance of OOM due to nvcc
-			threads = 2;
-		}
-		console.log(`Using ${threads} threads`);
 
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
 		const buildDir = join(onnxruntimeRoot, 'build');
