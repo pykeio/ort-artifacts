@@ -37,7 +37,7 @@ jobs:
             args: "-t --cuda --trt"
             static: true
             feature-set: train,cu12
-            cuda-version: '12.9.0'
+            cuda-version: '12.8.1'
             runs-on: ubuntu-22.04
           - target: aarch64-apple-darwin
             args: "-t --coreml -A aarch64 --xnnpack -N"
@@ -48,7 +48,7 @@ jobs:
             args: "-t --directml --cuda --trt --xnnpack"
             static: true
             feature-set: train,cu12
-            cuda-version: '12.9.0'
+            cuda-version: '12.8.1'
             runs-on: windows-2022
           - target: aarch64-pc-windows-msvc
             args: "-t -A aarch64 --directml"
@@ -74,7 +74,7 @@ jobs:
             args: "--cuda --trt"
             static: true
             feature-set: cu12
-            cuda-version: '12.9.0'
+            cuda-version: '12.8.1'
             runs-on: ubuntu-22.04
           - target: x86_64-unknown-linux-gnu
             args: "--webgpu -N"
@@ -90,7 +90,7 @@ jobs:
             args: "--directml --cuda --trt --xnnpack"
             static: true
             feature-set: cu12
-            cuda-version: '12.9.0'
+            cuda-version: '12.8.1'
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
             args: "--webgpu"
