@@ -209,7 +209,7 @@ await new Command()
 				switch (platform) {
 					case 'win32':
 						args.push('-A', 'ARM64');
-						compilerFlags.push('_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS');
+						compilerFlags.push('-D_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS');
 						break;
 					case 'linux':
 						args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(root, 'toolchains', 'aarch64-unknown-linux-gnu.cmake')}`);
@@ -246,15 +246,26 @@ await new Command()
 
 		// https://github.com/microsoft/onnxruntime/pull/21005
 		if (platform === 'win32') {
-			compilerFlags.push('_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR');
+			compilerFlags.push('-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR');
 		}
 
 		args.push('-Donnxruntime_BUILD_UNIT_TESTS=OFF');
 		args.push(`-Donnxruntime_USE_KLEIDIAI=${options.arch === 'aarch64' ? 'ON' : 'OFF'}`);
 		args.push('-Donnxruntime_CLIENT_PACKAGE_BUILD=ON');
 
+		if (options.arch === 'x86_64') {
+			switch (platform) {
+				case 'linux':
+					compilerFlags.push('-march=x86-64-v3');
+					break;
+				case 'win32':
+					compilerFlags.push('/arch:AVX2');
+					break;
+			}
+		}
+
 		if (compilerFlags.length > 0) {
-			const allFlags = compilerFlags.map(def => `-D${def}`).join(' ');
+			const allFlags = compilerFlags.join(' ');
 			args.push(`-DCMAKE_C_FLAGS=${allFlags}`);
 			args.push(`-DCMAKE_CXX_FLAGS=${allFlags}`);
 		}
