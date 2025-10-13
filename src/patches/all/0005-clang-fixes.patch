@@ -16,3 +16,16 @@ index 6c66047..17ec7c6 100644
          }
          if (max_SubLeaves >= 1) {
            GetCPUID(7, 1, data);
+diff --git a/onnxruntime/core/common/spin_pause.cc b/onnxruntime/core/common/spin_pause.cc
+index 329f3f1..436420b 100644
+--- a/onnxruntime/core/common/spin_pause.cc
++++ b/onnxruntime/core/common/spin_pause.cc
+@@ -35,7 +35,7 @@ void SpinPause() {
+ #if defined(_WIN32)
+     _tpause(0x0, __rdtsc() + tpause_spin_delay_cycles);
+ #elif defined(__linux__)
+-    __builtin_ia32_tpause(0x0, __rdtsc() + tpause_spin_delay_cycles);
++    _mm_pause();
+ #else
+     _mm_pause();
+ #endif
