@@ -23,7 +23,7 @@ jobs:
             args: "-A aarch64 --xnnpack -N"
             static: true
             feature-set: none
-            runs-on: ubuntu-24.04-arm
+            runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
             args: "--webgpu -N"
             static: true
@@ -43,12 +43,12 @@ jobs:
             args: "-A aarch64 --android --xnnpack --nnapi -N"
             static: true
             feature-set: none
-            runs-on: ubuntu-24.04-arm
+            runs-on: ubuntu-24.04
     steps:
-    #   - name: Install cross-compile tools
-    #     if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'aarch64-linux-android'
-    #     run: |
-    #       sudo apt update && sudo apt install -y gcc make gcc-14-aarch64-linux-gnu g++-14-aarch64-linux-gnu binutils-aarch64-linux-gnu
+      - name: Install cross-compile tools
+        if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'aarch64-linux-android'
+        run: |
+          sudo apt update && sudo apt install -y gcc make gcc-14-aarch64-linux-gnu g++-14-aarch64-linux-gnu binutils-aarch64-linux-gnu
       - name: Remove unnecessary software
         if: runner.os == 'Linux'
         run: |
