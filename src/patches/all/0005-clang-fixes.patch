@@ -1,0 +1,18 @@
+diff --git a/onnxruntime/core/common/cpuid_info.cc b/onnxruntime/core/common/cpuid_info.cc
+index 6c66047..17ec7c6 100644
+--- a/onnxruntime/core/common/cpuid_info.cc
++++ b/onnxruntime/core/common/cpuid_info.cc
+@@ -158,13 +158,7 @@ void CPUIDInfo::X86Init() {
+         // Check for TPAUSE
+         CheckIntelResult check_intel = CheckIntel();
+         if (check_intel.is_intel) {
+-#ifdef __linux__
+-#if !defined(__ANDROID__)
+-          has_tpause_ = __builtin_cpu_supports("waitpkg") != 0;
+-#endif
+-#else
+           has_tpause_ = (data[2] & (1 << 5)) != 0;
+-#endif
+         }
+         if (max_SubLeaves >= 1) {
+           GetCPUID(7, 1, data);
