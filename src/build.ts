@@ -143,7 +143,7 @@ await new Command()
 		}
 
 		if (options.cuda || options.trt || options.nvrtx) {
-			// args.push('-Donnxruntime_USE_FPA_INTB_GEMM=OFF');
+			args.push('-Donnxruntime_USE_FPA_INTB_GEMM=OFF');
 			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
 			// cudaFlags.push('-compress-mode=size');
 		}

@@ -1,3 +1,29 @@
+diff --git a/onnxruntime/contrib_ops/cuda/bert/group_query_attention.cc b/onnxruntime/contrib_ops/cuda/bert/group_query_attention.cc
+index e5d2434..8c4a073 100644
+--- a/onnxruntime/contrib_ops/cuda/bert/group_query_attention.cc
++++ b/onnxruntime/contrib_ops/cuda/bert/group_query_attention.cc
+@@ -126,7 +126,7 @@ Status GroupQueryAttention<T>::ComputeInternal(OpKernelContext* context) const {
+   // GQA CUDA uses either flash attention or memory efficient attention. Neither kernel supports returning the QK output.
+   ORT_RETURN_IF_ERROR(group_query_attention_helper::CheckNoQKOutput(
+       context->OutputCount(),
+-      static_cast<int>(Info().GetAttrOrDefault<int64_t>("qk_output", static_cast<int64_t>(QKOutputType::NO_OUTPUT)))));
++      static_cast<int>(Info().template GetAttrOrDefault<int64_t>("qk_output", static_cast<int64_t>(QKOutputType::NO_OUTPUT)))));
+ 
+   if (do_rotary_ && (cos_cache == nullptr || sin_cache == nullptr)) {
+     return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
+diff --git a/onnxruntime/contrib_ops/webgpu/bert/group_query_attention.cc b/onnxruntime/contrib_ops/webgpu/bert/group_query_attention.cc
+index 8b7b257..0da57ea 100644
+--- a/onnxruntime/contrib_ops/webgpu/bert/group_query_attention.cc
++++ b/onnxruntime/contrib_ops/webgpu/bert/group_query_attention.cc
+@@ -180,7 +180,7 @@ Status GroupQueryAttention::ComputeInternal(onnxruntime::webgpu::ComputeContext&
+ 
+   ORT_RETURN_IF_ERROR(group_query_attention_helper::CheckNoQKOutput(
+       context.OutputCount(),
+-      static_cast<int>(Info().GetAttrOrDefault<int64_t>("qk_output", static_cast<int64_t>(QKOutputType::NO_OUTPUT)))));
++      static_cast<int>(Info().template GetAttrOrDefault<int64_t>("qk_output", static_cast<int64_t>(QKOutputType::NO_OUTPUT)))));
+ 
+   WebgpuAttentionParameters parameters(params);
+   TensorShapeVector output_shape(3);
 diff --git a/onnxruntime/core/common/cpuid_info.cc b/onnxruntime/core/common/cpuid_info.cc
 index 6c66047..17ec7c6 100644
 --- a/onnxruntime/core/common/cpuid_info.cc

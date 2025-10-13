@@ -19,30 +19,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: aarch64-unknown-linux-gnu
-            args: "-A aarch64 --xnnpack -N"
-            static: true
-            feature-set: none
-            runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
-            args: "--webgpu -N"
+            args: "--cuda"
             static: true
-            feature-set: wgpu
-            runs-on: ubuntu-24.04
-          - target: aarch64-apple-ios
-            args: "-A aarch64 --iphoneos --xnnpack --coreml -N"
-            static: true
-            feature-set: none
-            runs-on: macos-15
-          - target: aarch64-apple-ios-sim
-            args: "-A aarch64 --iphonesimulator --xnnpack --coreml -N"
-            static: true
-            feature-set: none
-            runs-on: macos-15
-          - target: aarch64-linux-android
-            args: "-A aarch64 --android --xnnpack --nnapi -N"
-            static: true
-            feature-set: none
+            feature-set: cu12
+            cuda-version: '12.8.1'
             runs-on: ubuntu-24.04
     steps:
       - name: Install cross-compile tools
