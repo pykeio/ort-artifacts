@@ -79,8 +79,18 @@ await new Command()
 			console.log(`applied ${patchFile.name}`);
 		}
 
-		const compilerFlags = [];
+		const env = { ...Deno.env.toObject() };
 		const args = [];
+		const compilerFlags = [];
+		const cudaFlags: string[] = [];
+
+		if (platform === 'linux') {
+			env.CC = 'clang-18';
+			env.CXX = 'clang++-18';
+			if (options.cuda) {
+				cudaFlags.push('-ccbin', 'clang++-18');
+			}
+		}
 
 		// Build for iOS on macOS.
 		if (platform === 'darwin' && (options.iphoneos || options.iphonesimulator)) {
@@ -102,7 +112,6 @@ await new Command()
 			args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(Deno.env.get('ANDROID_NDK_HOME')!, 'build', 'cmake', 'android.toolchain.cmake')}`);
 		}
 
-		const cudaFlags: string[] = [];
 		if (options.cuda) {
 			args.push('-Donnxruntime_USE_CUDA=ON');
 			// https://github.com/microsoft/onnxruntime/pull/20768
@@ -137,9 +146,6 @@ await new Command()
 			// args.push('-Donnxruntime_USE_FPA_INTB_GEMM=OFF');
 			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
 			// cudaFlags.push('-compress-mode=size');
-		}
-		if (cudaFlags.length) {
-			args.push(`-DCMAKE_CUDA_FLAGS_INIT=${cudaFlags.join(' ')}`);
 		}
 
 		if (options.trt) {
@@ -274,14 +280,12 @@ await new Command()
 			args.push('-G', 'Ninja');
 		}
 
+		if (cudaFlags.length) {
+			args.push(`-DCMAKE_CUDA_FLAGS_INIT=${cudaFlags.join(' ')}`);
+		}
+
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
 		const artifactOutDir = join(root, 'artifact', 'onnxruntime');
-
-		const env = { ...Deno.env.toObject() };
-		if (platform === 'linux') {
-			env.CC = 'clang-18';
-			env.CXX = 'clang++-18';
-		}
 
 		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`
 			.env(env);
