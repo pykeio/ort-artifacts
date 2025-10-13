@@ -7,10 +7,6 @@ on:
         description: "ONNX Runtime version (e.g. 1.18.0)"
         required: true
 env:
-  GCC_VERSION: '11'
-  CMAKE_VERSION: '3.28'
-  PYTHON_VERSION: '3.10'
-  NODE_VERSION: '18'
   XCODE_VERSION: '14.3.1'
   MACOSX_DEPLOYMENT_TARGET: '13.4'
   IPHONEOS_DEPLOYMENT_TARGET: '15.1' # See: https://github.com/microsoft/onnxruntime/releases/tag/v1.21.0
@@ -27,18 +23,18 @@ jobs:
             args: "-t -A aarch64 --xnnpack -N"
             static: true
             feature-set: train
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
             args: "-t --xnnpack -N"
             static: true
             feature-set: train
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
             args: "-t --cuda --trt"
             static: true
             feature-set: train,cu12
             cuda-version: '12.8.1'
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
           - target: aarch64-apple-darwin
             args: "-t --coreml -A aarch64 --xnnpack -N"
             static: true
@@ -64,23 +60,23 @@ jobs:
             args: "-A aarch64 --xnnpack -N"
             static: true
             feature-set: none
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
             args: "--xnnpack -N"
             static: true
             feature-set: none
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
             args: "--cuda --trt"
             static: true
             feature-set: cu12
             cuda-version: '12.8.1'
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
             args: "--webgpu -N"
             static: true
             feature-set: wgpu
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
           - target: aarch64-apple-darwin
             args: "--coreml -A aarch64 --xnnpack -N"
             static: true
@@ -121,12 +117,12 @@ jobs:
             args: "-A aarch64 --android --xnnpack --nnapi -N"
             static: true
             feature-set: none
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-24.04
     steps:
       - name: Install cross-compile tools
         if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'aarch64-linux-android'
         run: |
-          sudo apt update && sudo apt install -y gcc make gcc-11-aarch64-linux-gnu g++-11-aarch64-linux-gnu binutils-aarch64-linux-gnu
+          sudo apt update && sudo apt install -y gcc make gcc-14-aarch64-linux-gnu g++-14-aarch64-linux-gnu binutils-aarch64-linux-gnu
       - name: Remove unnecessary software
         if: runner.os == 'Linux'
         run: |
@@ -151,8 +147,6 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-      - uses: android-actions/setup-android@v3
-        if: matrix.target == 'aarch64-linux-android'
       - uses: nttld/setup-ndk@v1
         id: setup-ndk
         if: matrix.target == 'aarch64-linux-android'
