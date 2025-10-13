@@ -266,7 +266,14 @@ await new Command()
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
 		const artifactOutDir = join(root, 'artifact', 'onnxruntime');
 
-		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`;
+		const env = { ...Deno.env.toObject() };
+		if (platform === 'linux') {
+			env.CC = 'clang-18';
+			env.CXX = 'clang++-18';
+		}
+
+		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`
+			.env(env);
 		await $`cmake --build build --config Release --parallel ${options.cuda ? 1 : cpus().length}`;
 		await $`cmake --install build`;
 	})
