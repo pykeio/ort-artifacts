@@ -41,7 +41,7 @@ jobs:
             feature-set: train
             runs-on: macos-15
           - target: x86_64-pc-windows-msvc
-            args: "-t --directml --cuda --trt --xnnpack -N"
+            args: "-t --directml --cuda --trt --xnnpack"
             static: true
             feature-set: train,cu12
             cuda-version: '12.8.1'
