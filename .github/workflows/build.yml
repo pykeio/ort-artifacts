@@ -30,7 +30,7 @@ jobs:
             feature-set: train
             runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
-            args: "-t --cuda --trt"
+            args: "-t --cuda --trt -N"
             static: true
             feature-set: train,cu12
             cuda-version: '12.8.1'
@@ -41,7 +41,7 @@ jobs:
             feature-set: train
             runs-on: macos-15
           - target: x86_64-pc-windows-msvc
-            args: "-t --directml --cuda --trt --xnnpack"
+            args: "-t --directml --cuda --trt --xnnpack -N"
             static: true
             feature-set: train,cu12
             cuda-version: '12.8.1'
@@ -67,7 +67,7 @@ jobs:
             feature-set: none
             runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
-            args: "--cuda --trt"
+            args: "--cuda --trt -N"
             static: true
             feature-set: cu12
             cuda-version: '12.8.1'
