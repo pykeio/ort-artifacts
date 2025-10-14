@@ -90,6 +90,11 @@ await new Command()
 			if (options.cuda) {
 				cudaFlags.push('-ccbin', 'clang++-18');
 			}
+		} else if (platform === 'win32') {
+			args.push('-G', 'Visual Studio 17 2022');
+			if (options.arch === 'x86_64') {
+				args.push('-A', 'x64');
+			}
 		}
 
 		// Build for iOS on macOS.
@@ -265,7 +270,8 @@ await new Command()
 					compilerFlags.push('-march=x86-64-v3');
 					break;
 				case 'win32':
-					compilerFlags.push('/arch:AVX2');
+					// compilerFlags.push('/arch:AVX2');
+					compilerFlags.push('-march=x86-64-v3');
 					break;
 			}
 		}
