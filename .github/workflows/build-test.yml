@@ -20,7 +20,7 @@ jobs:
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            args: "--cuda"
+            args: "--cuda -N"
             static: true
             feature-set: cu12
             cuda-version: '12.8.1'
