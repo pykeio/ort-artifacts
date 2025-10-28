@@ -122,13 +122,13 @@ jobs:
             args: "--nvrtx -N"
             static: true
             feature-set: nvrtx
-            cuda-version: '12.9.1'
+            cuda-version: '12.9.0'
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
             args: "--nvrtx"
             static: true
             feature-set: nvrtx
-            cuda-version: '12.9.1'
+            cuda-version: '12.9.0'
             runs-on: windows-2022
     steps:
       - name: Install cross-compile tools
