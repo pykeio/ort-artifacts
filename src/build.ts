@@ -84,7 +84,7 @@ await new Command()
 		const compilerFlags = [];
 		const cudaFlags: string[] = [];
 
-		if (platform === 'linux') {
+		if (platform === 'linux' && !options.android) {
 			env.CC = 'clang-18';
 			env.CXX = 'clang++-18';
 			if (options.cuda) {
@@ -223,7 +223,9 @@ await new Command()
 						compilerFlags.push('-D_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS');
 						break;
 					case 'linux':
-						args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(root, 'toolchains', 'aarch64-unknown-linux-gnu.cmake')}`);
+						if (!options.android) {
+							args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(root, 'toolchains', 'aarch64-unknown-linux-gnu.cmake')}`);
+						}
 						break;
 				}
 			}
