@@ -171,7 +171,7 @@ await new Command()
 		}
 		if (options.nvrtx) {
 			const trtxArchiveStream = await fetch(TENSORRT_RTX_ARCHIVE_URL).then(c => c.body!);
-			const trtxOutPath = join(root, 'tensorrt');
+			const trtxOutPath = join(root, options.trt ? 'tensorrt_rtx' : 'tensorrt');
 			await Deno.mkdir(trtxOutPath);
 			await $`tar xvzC ${trtxOutPath} --strip-components=1 -f -`.stdin(trtxArchiveStream);
 			args.push(`-Donnxruntime_TENSORRT_RTX_HOME=${trtxOutPath}`);

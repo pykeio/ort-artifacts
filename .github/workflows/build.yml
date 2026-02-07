@@ -132,6 +132,12 @@ jobs:
             feature-set: nvrtx
             cuda-version: "12.9.0"
             runs-on: windows-2022
+          - target: x86_64-pc-windows-msvc
+            args: "--directml --cuda --trt --nvrtx --xnnpack"
+            static: true
+            feature-set: cu12-nvrtx-dml
+            cuda-version: "12.9.0"
+            runs-on: windows-2022
 
     with:
       onnxruntime-version: ${{ inputs.onnxruntime-version }}
