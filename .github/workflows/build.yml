@@ -16,55 +16,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - target: aarch64-unknown-linux-gnu
-          #   args: "-t -A aarch64 --xnnpack -N"
-          #   static: true
-          #   feature-set: train
-          #   runs-on: ubuntu-24.04
-          # - target: x86_64-unknown-linux-gnu
-          #   args: "-t --xnnpack -N"
-          #   static: true
-          #   feature-set: train
-          #   runs-on: ubuntu-24.04
-          # - target: x86_64-unknown-linux-gnu
-          #   args: "-t --cuda --trt -N"
-          #   static: true
-          #   feature-set: train,cu12
-          #   cuda-version: '12.8.1'
-          #   runs-on: ubuntu-24.04
-          # - target: aarch64-apple-darwin
-          #   args: "-t --coreml -A aarch64 --xnnpack -N"
-          #   static: true
-          #   feature-set: train
-          #   runs-on: macos-15
-          # - target: x86_64-pc-windows-msvc
-          #   args: "-t --directml --cuda --trt --xnnpack"
-          #   static: true
-          #   feature-set: train,cu12
-          #   cuda-version: '12.8.1'
-          #   runs-on: windows-2022
-          # - target: aarch64-pc-windows-msvc
-          #   args: "-t -A aarch64 --directml"
-          #   static: true
-          #   feature-set: train
-          #   runs-on: windows-2022
-          # - target: x86_64-pc-windows-msvc
-          #   args: "-t --directml --xnnpack"
-          #   static: true
-          #   feature-set: train
-          #   runs-on: windows-2022
-          # - target: x86_64-apple-darwin
-          #   args: "--coreml -A aarch64 --xnnpack -N"
-          #   static: true
-          #   feature-set: none
-          #   runs-on: macos-15-intel
           - target: aarch64-unknown-linux-gnu
-            args: "-A aarch64 --xnnpack -N"
+            args: "-A aarch64 -N"
             static: true
             feature-set: none
             runs-on: ubuntu-24.04
           - target: x86_64-unknown-linux-gnu
-            args: "--xnnpack -N"
+            args: "-N"
             static: true
             feature-set: none
             runs-on: ubuntu-24.04
@@ -80,12 +38,12 @@ jobs:
             feature-set: wgpu
             runs-on: ubuntu-24.04
           - target: aarch64-apple-darwin
-            args: "--coreml -A aarch64 --xnnpack -N"
+            args: "--coreml -A aarch64 -N"
             static: true
             feature-set: none
             runs-on: macos-15
           - target: x86_64-pc-windows-msvc
-            args: "--directml --cuda --trt --xnnpack"
+            args: "--directml --cuda --trt"
             static: true
             feature-set: cu12
             cuda-version: "12.8.1"
@@ -101,22 +59,22 @@ jobs:
             feature-set: none
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "--directml --xnnpack"
+            args: "--directml"
             static: true
             feature-set: none
             runs-on: windows-2022
           - target: aarch64-apple-ios
-            args: "-A aarch64 --iphoneos --xnnpack --coreml -N"
+            args: "-A aarch64 --iphoneos --coreml -N"
             static: true
             feature-set: none
             runs-on: macos-15
           - target: aarch64-apple-ios-sim
-            args: "-A aarch64 --iphonesimulator --xnnpack --coreml -N"
+            args: "-A aarch64 --iphonesimulator --coreml -N"
             static: true
             feature-set: none
             runs-on: macos-15
           - target: aarch64-linux-android
-            args: "-A aarch64 --android --xnnpack --nnapi -N"
+            args: "-A aarch64 --android --nnapi -N"
             static: true
             feature-set: none
             runs-on: ubuntu-24.04
