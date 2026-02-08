@@ -104,18 +104,18 @@ await new Command()
 
 		$.cd(onnxruntimeRoot);
 
-		// await $`git reset --hard HEAD`;
-		// await $`git clean -fdx`;
+		await $`git reset --hard HEAD`;
+		await $`git clean -fdx`;
 
-		// const patchDir = join(root, 'src', 'patches', 'all');
-		// for await (const patchFile of Deno.readDir(patchDir)) {
-		// 	if (!patchFile.isFile) {
-		// 		continue;
-		// 	}
+		const patchDir = join(root, 'src', 'patches', 'all');
+		for await (const patchFile of Deno.readDir(patchDir)) {
+			if (!patchFile.isFile) {
+				continue;
+			}
 
-		// 	await $`git apply ${join(patchDir, patchFile.name)} --ignore-whitespace --recount --verbose`;
-		// 	console.log(`applied ${patchFile.name}`);
-		// }
+			await $`git apply ${join(patchDir, patchFile.name)} --ignore-whitespace --recount --verbose`;
+			console.log(`applied ${patchFile.name}`);
+		}
 
 		const env = { ...Deno.env.toObject() };
 		const args = [];
