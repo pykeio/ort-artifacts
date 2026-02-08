@@ -104,18 +104,18 @@ await new Command()
 
 		$.cd(onnxruntimeRoot);
 
-		await $`git reset --hard HEAD`;
-		await $`git clean -fdx`;
+		// await $`git reset --hard HEAD`;
+		// await $`git clean -fdx`;
 
-		const patchDir = join(root, 'src', 'patches', 'all');
-		for await (const patchFile of Deno.readDir(patchDir)) {
-			if (!patchFile.isFile) {
-				continue;
-			}
+		// const patchDir = join(root, 'src', 'patches', 'all');
+		// for await (const patchFile of Deno.readDir(patchDir)) {
+		// 	if (!patchFile.isFile) {
+		// 		continue;
+		// 	}
 
-			await $`git apply ${join(patchDir, patchFile.name)} --ignore-whitespace --recount --verbose`;
-			console.log(`applied ${patchFile.name}`);
-		}
+		// 	await $`git apply ${join(patchDir, patchFile.name)} --ignore-whitespace --recount --verbose`;
+		// 	console.log(`applied ${patchFile.name}`);
+		// }
 
 		const env = { ...Deno.env.toObject() };
 		const args = [];
@@ -225,6 +225,7 @@ await new Command()
 		}
 		if (options.webgpu) {
 			args.push('-Donnxruntime_USE_WEBGPU=ON');
+			args.push('-Donnxruntime_BUILD_WEBGPU_EP_STATIC_LIB=ON');
 			args.push('-Donnxruntime_ENABLE_DELAY_LOADING_WIN_DLLS=OFF');
 			args.push('-Donnxruntime_USE_EXTERNAL_DAWN=OFF');
 			args.push('-Donnxruntime_BUILD_DAWN_SHARED_LIBRARY=ON');
