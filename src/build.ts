@@ -3,7 +3,7 @@ import { join } from 'https://deno.land/std@0.224.0/path/mod.ts';
 
 import { arch as getArch, cpus, platform as getPlatform } from 'node:os';
 
-import { Command, EnumType } from '@cliffy/command';
+import { Command, EnumType, ValidationError } from '@cliffy/command';
 import $ from '@david/dax';
 
 const arch = getArch() as 'x64' | 'arm64';
@@ -11,15 +11,38 @@ const platform = getPlatform() as 'win32' | 'darwin' | 'linux';
 
 const TARGET_ARCHITECTURE_TYPE = new EnumType([ 'x86_64', 'aarch64' ]);
 
-const CUDNN_ARCHIVE_URL = platform === 'linux'
-	? 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-9.10.0.56_cuda12-archive.tar.xz'
-	: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.10.0.56_cuda12-archive.zip';
-const TENSORRT_ARCHIVE_URL = platform === 'linux'
-	? 'https://developer.download.nvidia.com/compute/machine-learning/tensorrt/10.10.0/tars/TensorRT-10.10.0.31.Linux.x86_64-gnu.cuda-12.9.tar.gz'
-	: 'https://developer.download.nvidia.com/compute/machine-learning/tensorrt/10.10.0/zip/TensorRT-10.10.0.31.Windows.win10.cuda-12.9.zip';
-const TENSORRT_RTX_ARCHIVE_URL = platform === 'linux'
-	? 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.1/TensorRT-RTX-1.1.1.26.Linux.x86_64-gnu.cuda-12.9.tar.gz'
-	: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.1/TensorRT-RTX-1.1.1.26.Windows.win10.cuda-12.9.zip';
+const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux', Record<'cudnn' | 'trt', string>>> = {
+	12: {
+		linux: {
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.19.0.56_cuda12-archive.tar.xz',
+			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/tars/TensorRT-10.15.1.29.Linux.x86_64-gnu.cuda-12.9.tar.gz'
+		},
+		win32: {
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.19.0.56_cuda12-archive.zip',
+			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/zip/TensorRT-10.15.1.29.Windows.amd64.cuda-12.9.zip'
+		}
+	},
+	13: {
+		linux: {
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.19.0.56_cuda13-archive.tar.xz',
+			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/tars/TensorRT-10.15.1.29.Linux.x86_64-gnu.cuda-13.1.tar.gz'
+		},
+		win32: {
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.19.0.56_cuda13-archive.zip',
+			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/zip/TensorRT-10.15.1.29.Windows.amd64.cuda-13.1.zip'
+		}
+	}
+};
+const NVRTX_ARCHIVES: Record<number, Record<'win32' | 'linux', string>> = {
+	12: {
+		linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-Linux-x86_64-cuda-12.9-Release-external.tar.gz',
+		win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-win10-amd64-cuda-12.9-Release-external.zip'
+	},
+	13: {
+		linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-Linux-x86_64-cuda-13.1-Release-external.tar.gz',
+		win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-win10-amd64-cuda-13.1-Release-external.zip'
+	}
+};
 
 await new Command()
 	.name('ort-artifact')
@@ -31,9 +54,23 @@ await new Command()
 	.option('--iphoneos', 'Target iOS / iPadOS')
 	.option('--iphonesimulator', 'Target iOS / iPadOS simulator')
 	.option('--android', 'Target Android')
-	.option('--cuda', 'Enable CUDA EP')
+	.option('--cuda <version:integer>', 'Enable CUDA EP', {
+		value(value: number) {
+			if (value !== 12 && value !== 13) {
+				throw new ValidationError('--cuda must be either 12 or 13');
+			}
+			return value;
+		}
+	})
 	.option('--trt', 'Enable TensorRT EP', { depends: [ 'cuda' ] })
-	.option('--nvrtx', 'Enable NV TensorRT RTX EP')
+	.option('--nvrtx <cuda_version:integer>', 'Enable NV TensorRT RTX EP', {
+		value(value: number) {
+			if (value !== 12 && value !== 13) {
+				throw new ValidationError('--nvrtx must be either 12 or 13');
+			}
+			return value;
+		}
+	})
 	.option('--directml', 'Enable DirectML EP')
 	.option('--coreml', 'Enable CoreML EP')
 	.option('--dnnl', 'Enable DNNL EP')
@@ -42,6 +79,7 @@ await new Command()
 	.option('--openvino', 'Enable OpenVINO EP')
 	.option('--nnapi', 'Enable NNAPI EP')
 	.option('-N, --ninja', 'build with ninja')
+	.option('--vs2026', 'Use Visual Studio 2026 generator')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.action(async (options, ..._) => {
 		const root = Deno.cwd();
@@ -84,6 +122,8 @@ await new Command()
 		const compilerFlags = [];
 		const cudaFlags: string[] = [];
 
+		const cudaArchives = options.cuda ? CUDA_ARCHIVES[options.cuda][platform as 'win32' | 'linux'] : null;
+
 		if (platform === 'linux' && !options.android) {
 			env.CC = 'clang-18';
 			env.CXX = 'clang++-18';
@@ -91,7 +131,7 @@ await new Command()
 				cudaFlags.push('-ccbin', 'clang++-18');
 			}
 		} else if (platform === 'win32') {
-			args.push('-G', 'Visual Studio 17 2022');
+			args.push('-G', options.vs2026 ? 'Visual Studio 18 2026' : 'Visual Studio 17 2022');
 			if (options.arch === 'x86_64') {
 				args.push('-A', 'x64');
 			}
@@ -134,7 +174,7 @@ await new Command()
 			}
 
 			if (!should_skip) {
-				const cudnnArchiveStream = await fetch(CUDNN_ARCHIVE_URL).then(c => c.body!);
+				const cudnnArchiveStream = await fetch(cudaArchives!.cudnn).then(c => c.body!);
 				await Deno.mkdir(cudnnOutPath);
 				await $`tar xvJC ${cudnnOutPath} --strip-components=1 -f -`.stdin(cudnnArchiveStream);
 			}
@@ -163,15 +203,15 @@ await new Command()
 		}
 
 		if (options.trt) {
-			const trtArchiveStream = await fetch(TENSORRT_ARCHIVE_URL).then(c => c.body!);
+			const trtArchiveStream = await fetch(cudaArchives!.trt).then(c => c.body!);
 			const trtOutPath = join(root, 'tensorrt');
 			await Deno.mkdir(trtOutPath);
 			await $`tar xvzC ${trtOutPath} --strip-components=1 -f -`.stdin(trtArchiveStream);
 			args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
 		}
 		if (options.nvrtx) {
-			const trtxArchiveStream = await fetch(TENSORRT_RTX_ARCHIVE_URL).then(c => c.body!);
-			const trtxOutPath = join(root, 'tensorrt');
+			const trtxArchiveStream = await fetch(NVRTX_ARCHIVES[options.nvrtx!][platform as 'linux' | 'win32']).then(c => c.body!);
+			const trtxOutPath = join(root, 'nvrtx');
 			await Deno.mkdir(trtxOutPath);
 			await $`tar xvzC ${trtxOutPath} --strip-components=1 -f -`.stdin(trtxArchiveStream);
 			args.push(`-Donnxruntime_TENSORRT_RTX_HOME=${trtxOutPath}`);
@@ -188,7 +228,7 @@ await new Command()
 			args.push('-Donnxruntime_ENABLE_DELAY_LOADING_WIN_DLLS=OFF');
 			args.push('-Donnxruntime_USE_EXTERNAL_DAWN=OFF');
 			args.push('-Donnxruntime_BUILD_DAWN_MONOLITHIC_LIBRARY=ON');
-			args.push('-Donnxruntime_WGSL_TEMPLATE=static')
+			args.push('-Donnxruntime_WGSL_TEMPLATE=static');
 		}
 		if (options.dnnl) {
 			args.push('-Donnxruntime_USE_DNNL=ON');
@@ -272,8 +312,7 @@ await new Command()
 					compilerFlags.push('-march=x86-64-v3');
 					break;
 				case 'win32':
-					// compilerFlags.push('/arch:AVX2');
-					compilerFlags.push('-march=x86-64-v3');
+					compilerFlags.push('/arch:AVX2');
 					break;
 			}
 		}

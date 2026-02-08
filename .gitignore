@@ -2,3 +2,5 @@
 artifact/
 output/
 cudnn/
+tensorrt/
+nvrtx/

@@ -84,7 +84,7 @@ jobs:
           sudo rm -rf /usr/local/lib/android
       - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@v6
-      - uses: Jimver/cuda-toolkit@v0.2.24
+      - uses: Jimver/cuda-toolkit@v0.2.30
         if: inputs.cuda-version && runner.os != 'macOS'
         with:
           cuda: ${{ inputs.cuda-version }}

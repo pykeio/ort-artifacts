@@ -16,6 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # desktop CPU
           - target: aarch64-unknown-linux-gnu
             args: "-A aarch64 -N"
             static: true
@@ -26,33 +27,11 @@ jobs:
             static: true
             feature-set: none
             runs-on: ubuntu-24.04
-          - target: x86_64-unknown-linux-gnu
-            args: "--cuda --trt -N"
-            static: true
-            feature-set: cu12
-            cuda-version: "12.8.1"
-            runs-on: ubuntu-24.04
-          - target: x86_64-unknown-linux-gnu
-            args: "--webgpu -N"
-            static: true
-            feature-set: wgpu
-            runs-on: ubuntu-24.04
           - target: aarch64-apple-darwin
             args: "--coreml -A aarch64 -N"
             static: true
             feature-set: none
             runs-on: macos-15
-          - target: x86_64-pc-windows-msvc
-            args: "--directml --cuda --trt"
-            static: true
-            feature-set: cu12
-            cuda-version: "12.8.1"
-            runs-on: windows-2022
-          - target: x86_64-pc-windows-msvc
-            args: "--webgpu"
-            static: true
-            feature-set: wgpu
-            runs-on: windows-2025
           - target: aarch64-pc-windows-msvc
             args: "-A aarch64 --directml"
             static: true
@@ -63,6 +42,46 @@ jobs:
             static: true
             feature-set: none
             runs-on: windows-2022
+
+          # CUDA + TensorRT + NVRTX
+          - target: x86_64-unknown-linux-gnu
+            args: "--cuda=12 --trt --nvrtx=12 -N"
+            static: true
+            feature-set: cu12
+            cuda-version: "12.8.1"
+            runs-on: ubuntu-24.04
+          - target: x86_64-pc-windows-msvc
+            args: "--directml --cuda=12 --trt --nvrtx=12"
+            static: true
+            feature-set: cu12
+            cuda-version: "12.8.1"
+            runs-on: windows-2022
+          - target: x86_64-unknown-linux-gnu
+            args: "--cuda=13 --trt --nvrtx=13 -N"
+            static: true
+            feature-set: cu13
+            cuda-version: "13.1.0"
+            runs-on: ubuntu-24.04
+          - target: x86_64-pc-windows-msvc
+            args: "--directml --cuda=13 --trt --nvrtx=13"
+            static: true
+            feature-set: cu13
+            cuda-version: "13.1.0"
+            runs-on: windows-2022
+
+          # WebGPU
+          - target: x86_64-unknown-linux-gnu
+            args: "--webgpu -N"
+            static: true
+            feature-set: wgpu
+            runs-on: ubuntu-24.04
+          - target: x86_64-pc-windows-msvc
+            args: "--webgpu"
+            static: true
+            feature-set: wgpu
+            runs-on: windows-2025
+
+          # mobile
           - target: aarch64-apple-ios
             args: "-A aarch64 --iphoneos --coreml -N"
             static: true
@@ -78,17 +97,19 @@ jobs:
             static: true
             feature-set: none
             runs-on: ubuntu-24.04
+
+          # standalone NVRTX
           - target: x86_64-unknown-linux-gnu
-            args: "--nvrtx -N"
+            args: "--nvrtx=13 -N"
             static: true
             feature-set: nvrtx
-            cuda-version: "12.9.0"
+            cuda-version: "13.1.0"
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
-            args: "--nvrtx"
+            args: "--nvrtx=13"
             static: true
             feature-set: nvrtx
-            cuda-version: "12.9.0"
+            cuda-version: "13.1.0"
             runs-on: windows-2022
 
     with:
