@@ -1,15 +1,39 @@
-import { exists } from 'https://deno.land/std@0.224.0/fs/mod.ts';
-import { join } from 'https://deno.land/std@0.224.0/path/mod.ts';
+import { exists } from '@std/fs';
+import { join } from '@std/path';
+import { TarStream, TarStreamInput } from '@std/tar';
 
-import { arch as getArch, cpus, platform as getPlatform } from 'node:os';
+import { cpus, arch as getArch, platform as getPlatform } from 'node:os';
 
 import { Command, EnumType, ValidationError } from '@cliffy/command';
 import $ from '@david/dax';
+
+import { Compressor } from './compressor/index.ts';
 
 const arch = getArch() as 'x64' | 'arm64';
 const platform = getPlatform() as 'win32' | 'darwin' | 'linux';
 
 const TARGET_ARCHITECTURE_TYPE = new EnumType([ 'x86_64', 'aarch64' ]);
+
+class CompressorStream extends TransformStream<Uint8Array<ArrayBuffer>, Uint8Array<ArrayBuffer>> {
+	#compressor = new Compressor();
+
+	constructor() {
+		super({
+			transform: (chunk, controller) => {
+				const res = this.#compressor.push(chunk);
+				if (res.byteLength) {
+					controller.enqueue(res);
+				}
+			},
+			flush: controller => {
+				const res = this.#compressor.flush();
+				if (res.byteLength) {
+					controller.enqueue(res);
+				}
+			}
+		});
+	}
+}
 
 const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux', Record<'cudnn' | 'trt', string>>> = {
 	12: {
@@ -43,6 +67,23 @@ const NVRTX_ARCHIVES: Record<number, Record<'win32' | 'linux', string>> = {
 		win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-win10-amd64-cuda-13.1-Release-external.zip'
 	}
 };
+
+async function *makeTarInput(folder: string): AsyncGenerator<TarStreamInput> {
+	for await (const entry of Deno.readDir(folder)) {
+		if (!entry.isFile) {
+			continue;
+		}
+
+		const path = join(folder, entry.name);
+		const { size } = await Deno.stat(path);
+		yield {
+			type: 'file',
+			path: entry.name,
+			size,
+			readable: (await Deno.open(path, { read: true })).readable
+		};
+	}
+}
 
 await new Command()
 	.name('ort-artifact')
@@ -339,5 +380,11 @@ await new Command()
 			.env(env);
 		await $`cmake --build build --config Release --parallel ${cpus().length}`;
 		await $`cmake --install build`;
+
+		const artifactOut = await Deno.open(join(root, 'artifact.tar.lzma2'), { create: true, write: true });
+		await ReadableStream.from(makeTarInput(join(artifactOutDir, 'lib')))
+			.pipeThrough(new TarStream())
+			.pipeThrough(new CompressorStream())
+			.pipeTo(artifactOut.writable);
 	})
 	.parse(Deno.args);

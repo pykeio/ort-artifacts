@@ -1,6 +1,9 @@
 {
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.4",
-    "@david/dax": "jsr:@david/dax@^0.41.0"
+    "@david/dax": "jsr:@david/dax@^0.41.0",
+    "@std/fs": "jsr:@std/fs@^1.0.22",
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "@std/tar": "jsr:@std/tar@^0.1.10"
   }
 }
