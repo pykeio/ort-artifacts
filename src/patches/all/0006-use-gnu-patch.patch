@@ -1,0 +1,13 @@
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 6d0d395..1e54059 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -472,7 +472,7 @@ if(NOT WIN32 AND NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+ endif()
+ 
+ find_package(Patch)
+-if (CMAKE_HOST_WIN32 AND NOT Patch_FOUND)
++if (CMAKE_HOST_WIN32 AND CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "AMD64")
+     # work around CI machines missing patch from the git install by falling back to the binary in this repo.
+     # replicate what happens in https://github.com/Kitware/CMake/blob/master/Modules/FindPatch.cmake but without
+     # the hardcoded suffixes in the path to the patch binary.
