@@ -1,5 +1,10 @@
 name: Build Runner
 
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
 on:
   workflow_call:
     inputs:
