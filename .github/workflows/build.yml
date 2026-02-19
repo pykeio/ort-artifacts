@@ -106,7 +106,7 @@ jobs:
             cuda-version: "13.1.0"
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
-            args: "--nvrtx=13"
+            args: "--nvrtx=13 --directml"
             static: true
             feature-set: nvrtx
             cuda-version: "13.1.0"
