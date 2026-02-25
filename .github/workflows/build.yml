@@ -80,6 +80,11 @@ jobs:
             static: true
             feature-set: wgpu
             runs-on: windows-2025
+          - target: aarch64-apple-darwin
+            args: "--coreml -A aarch64 -N --webgpu"
+            static: true
+            feature-set: wgpu
+            runs-on: macos-15
 
           # mobile
           - target: aarch64-apple-ios
