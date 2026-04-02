@@ -121,6 +121,7 @@ await new Command()
 	.option('--nnapi', 'Enable NNAPI EP')
 	.option('-N, --ninja', 'build with ninja')
 	.option('--vs2026', 'Use Visual Studio 2026 generator')
+	.option('--debug', 'Build with Debug config instead of Release')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.action(async (options, ..._) => {
 		const root = Deno.cwd();
@@ -376,9 +377,10 @@ await new Command()
 		const sourceDir = options.static ? join(root, 'src', 'static-build') : 'cmake';
 		const artifactOutDir = join(root, 'artifact', 'onnxruntime');
 
-		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`
+		const buildConfig = options.debug ? 'Debug' : 'Release';
+		await $`cmake -S ${sourceDir} -B build -D CMAKE_BUILD_TYPE=${buildConfig} -DCMAKE_CONFIGURATION_TYPES=${buildConfig} -DCMAKE_INSTALL_PREFIX=${artifactOutDir} -DONNXRUNTIME_SOURCE_DIR=${onnxruntimeRoot} --compile-no-warning-as-error ${args}`
 			.env(env);
-		await $`cmake --build build --config Release --parallel ${cpus().length}`;
+		await $`cmake --build build --config ${buildConfig} --parallel ${cpus().length}`;
 		await $`cmake --install build`;
 
 		const artifactOut = await Deno.open(join(root, 'artifact.tar.lzma2'), { create: true, write: true });
