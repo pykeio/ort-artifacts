@@ -231,6 +231,11 @@ await new Command()
 
 		if (options.cuda || options.trt || options.nvrtx) {
 			args.push('-Donnxruntime_USE_FPA_INTB_GEMM=OFF');
+			args.push('-Donnxruntime_USE_FLASH_ATTENTION=OFF');
+			args.push('-Donnxruntime_USE_MEMORY_EFFICIENT_ATTENTION=OFF');
+			args.push('-Donnxruntime_USE_FP8_KV_CACHE=OFF');
+			args.push('-Donnxruntime_QUICK_BUILD=ON');
+
 			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
 			cudaFlags.push('-compress-mode=size');
 		}
@@ -350,6 +355,7 @@ await new Command()
 		args.push('-Donnxruntime_CLIENT_PACKAGE_BUILD=ON');
 
 		if (options.arch === 'x86_64') {
+			args.push('-Donnxruntime_USE_AVX2=ON');
 			switch (platform) {
 				case 'linux':
 					compilerFlags.push('-march=x86-64-v3');
