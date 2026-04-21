@@ -167,11 +167,11 @@ await new Command()
 		const cudaArchives = options.cuda ? CUDA_ARCHIVES[options.cuda][platform as 'win32' | 'linux'] : null;
 
 		if (platform === 'linux' && !options.android) {
-			env.CC = 'clang-19';
-			env.CXX = 'clang++-19';
-			if (options.cuda) {
-				cudaFlags.push('-ccbin', 'clang++-19');
-			}
+			// env.CC = 'clang-19';
+			// env.CXX = 'clang++-19';
+			// if (options.cuda) {
+			// 	cudaFlags.push('-ccbin', 'clang++-19');
+			// }
 		} else if (platform === 'win32') {
 			args.push('-G', options.vs2026 ? 'Visual Studio 18 2026' : 'Visual Studio 17 2022');
 			if (options.arch === 'x86_64') {
