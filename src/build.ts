@@ -345,8 +345,9 @@ await new Command()
 			}
 		}
 
-		// https://github.com/microsoft/onnxruntime/pull/21005
 		if (platform === 'win32') {
+			compilerFlags.push('-D_CRT_SECURE_NO_WARNINGS');
+			// https://github.com/microsoft/onnxruntime/pull/21005
 			compilerFlags.push('-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR');
 		}
 
