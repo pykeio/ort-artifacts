@@ -57,15 +57,9 @@ const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux', Record<'cudnn' | '
 		}
 	}
 };
-const NVRTX_ARCHIVES: Record<number, Record<'win32' | 'linux', string>> = {
-	12: {
-		linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-Linux-x86_64-cuda-12.9-Release-external.tar.gz',
-		win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-win10-amd64-cuda-12.9-Release-external.zip'
-	},
-	13: {
-		linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-Linux-x86_64-cuda-13.1-Release-external.tar.gz',
-		win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-win10-amd64-cuda-13.1-Release-external.zip'
-	}
+const NVRTX_ARCHIVES: Record<'win32' | 'linux', string> = {
+	linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-Linux-x86_64-cuda-13.1-Release-external.tar.gz',
+	win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-win10-amd64-cuda-13.1-Release-external.zip'
 };
 
 async function *makeTarInput(folder: string): AsyncGenerator<TarStreamInput> {
@@ -104,14 +98,7 @@ await new Command()
 		}
 	})
 	.option('--trt', 'Enable TensorRT EP', { depends: [ 'cuda' ] })
-	.option('--nvrtx <cuda_version:integer>', 'Enable NV TensorRT RTX EP', {
-		value(value: number) {
-			if (value !== 12 && value !== 13) {
-				throw new ValidationError('--nvrtx must be either 12 or 13');
-			}
-			return value;
-		}
-	})
+	.option('--nvrtx', 'Enable NV TensorRT RTX EP')
 	.option('--directml', 'Enable DirectML EP')
 	.option('--coreml', 'Enable CoreML EP')
 	.option('--dnnl', 'Enable DNNL EP')
@@ -247,6 +234,7 @@ await new Command()
 		if (options.nvrtx) {
 			args.push('-Donnxruntime_USE_NV=ON');
 			args.push('-Donnxruntime_USE_TENSORRT_BUILTIN_PARSER=ON');
+			args.push('-Donnxruntime_DISABLE_RTTI=OFF');
 		}
 
 		if (options.trt) {
@@ -257,7 +245,7 @@ await new Command()
 			args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
 		}
 		if (options.nvrtx) {
-			const trtxArchiveStream = await fetch(NVRTX_ARCHIVES[options.nvrtx!][platform as 'linux' | 'win32']).then(c => c.body!);
+			const trtxArchiveStream = await fetch(NVRTX_ARCHIVES[platform as 'linux' | 'win32']).then(c => c.body!);
 			const trtxOutPath = join(root, 'nvrtx');
 			await Deno.mkdir(trtxOutPath);
 			await $`tar xvzC ${trtxOutPath} --strip-components=1 -f -`.stdin(trtxArchiveStream);

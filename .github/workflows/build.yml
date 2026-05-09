@@ -43,15 +43,15 @@ jobs:
             feature-set: none
             runs-on: windows-2022
 
-          # CUDA + TensorRT + NVRTX
+          # CUDA + TensorRT + NVRTX (for CUDA 13)
           - target: x86_64-unknown-linux-gnu
-            args: "--cuda=12 --trt --nvrtx=12 -N"
+            args: "--cuda=12 --trt -N"
             static: true
             feature-set: cu12
             cuda-version: "12.8.1"
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
-            args: "--directml --cuda=12 --trt --nvrtx=12"
+            args: "--directml --cuda=12 --trt"
             static: true
             feature-set: cu12
             cuda-version: "12.8.1"
