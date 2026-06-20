@@ -76,7 +76,7 @@ jobs:
             feature-set: wgpu
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
-            args: "--webgpu"
+            args: "--webgpu --vs2026"
             static: true
             feature-set: wgpu
             runs-on: windows-2025

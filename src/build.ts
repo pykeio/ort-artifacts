@@ -107,6 +107,7 @@ await new Command()
 	.option('--openvino', 'Enable OpenVINO EP')
 	.option('--nnapi', 'Enable NNAPI EP')
 	.option('-N, --ninja', 'build with ninja')
+	.option('--vs2026', 'Use Visual Studio 2026 generator')
 	.option('--debug', 'Build with Debug config instead of Release')
 	.option('-A, --arch <arch:target-arch>', 'Configure target architecture for cross-compile', { default: 'x86_64' })
 	.action(async (options, ..._) => {
@@ -159,7 +160,7 @@ await new Command()
 				cudaFlags.push('-ccbin', 'clang++-19');
 			}
 		} else if (platform === 'win32') {
-			args.push('-G', 'Visual Studio 18 2026');
+			args.push('-G', options.vs2026 ? 'Visual Studio 18 2026' : 'Visual Studio 17 2022');
 			if (options.arch === 'x86_64') {
 				args.push('-A', 'x64');
 			}
