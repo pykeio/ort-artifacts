@@ -60,13 +60,13 @@ jobs:
             args: "--cuda=13 --trt --nvrtx -N"
             static: true
             feature-set: cu13
-            cuda-version: "13.1.0"
+            cuda-version: "13.2.0"
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
             args: "--directml --cuda=13 --trt --nvrtx"
             static: true
             feature-set: cu13
-            cuda-version: "13.1.0"
+            cuda-version: "13.2.0"
             runs-on: windows-2022
 
           # WebGPU
@@ -108,13 +108,13 @@ jobs:
             args: "--nvrtx -N"
             static: true
             feature-set: nvrtx
-            cuda-version: "13.1.0"
+            cuda-version: "13.2.0"
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
             args: "--nvrtx --directml"
             static: true
             feature-set: nvrtx
-            cuda-version: "13.1.0"
+            cuda-version: "13.2.0"
             runs-on: windows-2022
 
     with:
