@@ -93,7 +93,7 @@ jobs:
         if: runner.os == 'Linux'
         with:
           version: 19
-      - uses: Jimver/cuda-toolkit@v0.2.30
+      - uses: Jimver/cuda-toolkit@v0.2.35
         if: inputs.cuda-version && runner.os != 'macOS'
         with:
           cuda: ${{ inputs.cuda-version }}
