@@ -1,0 +1,13 @@
+diff --git a/onnxruntime/core/providers/cuda/llm/attention.cc b/onnxruntime/core/providers/cuda/llm/attention.cc
+index 9e097ea..ba6ad83 100644
+--- a/onnxruntime/core/providers/cuda/llm/attention.cc
++++ b/onnxruntime/core/providers/cuda/llm/attention.cc
+@@ -163,7 +163,7 @@ Status Attention<T>::ConvertAttnMaskToBias(
+     // causing s_prime=0 → NaN for fully-masked batches. Cap to prevent this.
+     // See kCutlassSafeMaskFilterValue in memory_efficient_attention.h for details.
+     float mask_filter_value = std::max(static_cast<float>(std::numeric_limits<T>::lowest()),
+-                                       ::onnxruntime::contrib::cuda::kCutlassSafeMaskFilterValue);
++                                       -1.0e+30f);
+     ORT_RETURN_IF_ERROR(LaunchConvertBoolMaskToAttentionBias<NativeCudaT>(
+         attn_mask->Data<bool>(),
+         reinterpret_cast<NativeCudaT*>(converted_mask_buffer.get()),
