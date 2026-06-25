@@ -158,6 +158,7 @@ await new Command()
 			env.CXX = 'clang++-22';
 			if (options.cuda) {
 				cudaFlags.push('-ccbin', 'clang++-22');
+				cudaFlags.push('-allow-unsupported-compiler');
 			}
 		} else if (platform === 'win32') {
 			args.push('-G', options.vs2026 ? 'Visual Studio 18 2026' : 'Visual Studio 17 2022');
