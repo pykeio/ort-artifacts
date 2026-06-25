@@ -38,28 +38,28 @@ class CompressorStream extends TransformStream<Uint8Array<ArrayBuffer>, Uint8Arr
 const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux', Record<'cudnn' | 'trt', string>>> = {
 	12: {
 		linux: {
-			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.19.0.56_cuda12-archive.tar.xz',
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.23.2.1_cuda12-archive.tar.xz',
 			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/tars/TensorRT-10.15.1.29.Linux.x86_64-gnu.cuda-12.9.tar.gz'
 		},
 		win32: {
-			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.19.0.56_cuda12-archive.zip',
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.23.2.1_cuda12-archive.zip',
 			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/zip/TensorRT-10.15.1.29.Windows.amd64.cuda-12.9.zip'
 		}
 	},
 	13: {
 		linux: {
-			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.19.0.56_cuda13-archive.tar.xz',
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.23.2.1_cuda13-archive.tar.xz',
 			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/tars/TensorRT-10.15.1.29.Linux.x86_64-gnu.cuda-13.1.tar.gz'
 		},
 		win32: {
-			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.19.0.56_cuda13-archive.zip',
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.23.2.1_cuda13-archive.zip',
 			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/zip/TensorRT-10.15.1.29.Windows.amd64.cuda-13.1.zip'
 		}
 	}
 };
 const NVRTX_ARCHIVES: Record<'win32' | 'linux', string> = {
-	linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-Linux-x86_64-cuda-13.1-Release-external.tar.gz',
-	win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.3/TensorRT-RTX-1.3.0.35-win10-amd64-cuda-13.1-Release-external.zip'
+	linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.4/TensorRT-RTX-1.4.0.76-Linux-x86_64-cuda-13.2-Release-external.tar.gz',
+	win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.4/TensorRT-RTX-1.4.0.76-Windows-amd64-cuda-13.2-Release-external.zip'
 };
 
 async function *makeTarInput(folder: string): AsyncGenerator<TarStreamInput> {
@@ -154,11 +154,11 @@ await new Command()
 		const cudaArchives = options.cuda ? CUDA_ARCHIVES[options.cuda][platform as 'win32' | 'linux'] : null;
 
 		if (platform === 'linux' && !options.android) {
-			// env.CC = 'clang-19';
-			// env.CXX = 'clang++-19';
-			// if (options.cuda) {
-			// 	cudaFlags.push('-ccbin', 'clang++-19');
-			// }
+			env.CC = 'clang-22';
+			env.CXX = 'clang++-22';
+			if (options.cuda) {
+				cudaFlags.push('-ccbin', 'clang++-22');
+			}
 		} else if (platform === 'win32') {
 			args.push('-G', options.vs2026 ? 'Visual Studio 18 2026' : 'Visual Studio 17 2022');
 			if (options.arch === 'x86_64') {

@@ -89,10 +89,10 @@ jobs:
           sudo rm -rf /usr/local/lib/android
       - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@v6
-      - uses: egor-tensin/setup-clang@v2.2
+      - uses: egor-tensin/setup-clang@v2.3
         if: runner.os == 'Linux'
         with:
-          version: 19
+          version: 22
       - uses: Jimver/cuda-toolkit@v0.2.35
         if: inputs.cuda-version && runner.os != 'macOS'
         with:
