@@ -32,3 +32,16 @@ index e803847..4aae5e4 100644
 + // https://github.com/llvm/llvm-project/pull/127636#pullrequestreview-2637005293
 + // In the current implementation, __builtin_is_cpp_trivially_relocatable will
 + // only return true for types that are trivially relocatable according to the
++diff --git a/absl/base/attributes.h b/absl/base/attributes.h
++index 33b2c28..8848f98 100644
++--- a/absl/base/attributes.h
+++++ b/absl/base/attributes.h
++@@ -890,7 +890,7 @@ struct AbslInternal_YouForgotToExplicitlyInitializeAField {
++ // See also the upstream documentation:
++ // https://clang.llvm.org/docs/AttributeReference.html#lifetimebound
++ // https://learn.microsoft.com/en-us/cpp/code-quality/c26816?view=msvc-170
++-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::lifetimebound)
+++#if ABSL_HAVE_CPP_ATTRIBUTE(clang::lifetimebound) && !defined(__NVCC__)
++ #define ABSL_ATTRIBUTE_LIFETIME_BOUND [[clang::lifetimebound]]
++ #elif ABSL_HAVE_CPP_ATTRIBUTE(msvc::lifetimebound)
++ #define ABSL_ATTRIBUTE_LIFETIME_BOUND [[msvc::lifetimebound]]
