@@ -1,9 +1,11 @@
-diff --git a/cmake/patches/abseil/absl_cuda_fixes.patch b/cmake/patches/abseil/absl_cuda_fixes.patch
-new file mode 100644
-index 0000000..6ef1375
---- /dev/null
-+++ b/cmake/patches/abseil/absl_cuda_fixes.patch
-@@ -0,0 +1,26 @@
+diff --git a/cmake/patches/abseil/absl_cuda_warnings.patch b/cmake/patches/abseil/absl_cuda_warnings.patch
+index e803847..4aae5e4 100644
+--- a/cmake/patches/abseil/absl_cuda_warnings.patch
++++ b/cmake/patches/abseil/absl_cuda_warnings.patch
+@@ -56,3 +56,29 @@ index 1234567..abcdefg 100644
+    seed += uint16_t{0xad53};
+    return seed;
+  }
 +diff --git a/absl/base/nullability.h b/absl/base/nullability.h
 +index 2796a36..b1f7874 100644
 +--- a/absl/base/nullability.h
@@ -13,7 +15,7 @@ index 0000000..6ef1375
 + // allow nullability annotations to be applied to any type, not just ones marked
 + // with `ABSL_NULLABILITY_COMPATIBLE`.
 +-#if ABSL_HAVE_FEATURE(nullability_on_classes)
-++#if 0
+++#if ABSL_HAVE_FEATURE(nullability_on_classes) && !defined(__NVCC__)
 + #define ABSL_NULLABILITY_COMPATIBLE _Nullable
 + #else
 + #define ABSL_NULLABILITY_COMPATIBLE
@@ -26,7 +28,7 @@ index 0000000..6ef1375
 + // According to https://github.com/abseil/abseil-cpp/issues/1479, this does not
 + // work with NVCC either.
 +-#if ABSL_HAVE_BUILTIN(__builtin_is_cpp_trivially_relocatable)
-++#if 0
+++#if ABSL_HAVE_BUILTIN(__builtin_is_cpp_trivially_relocatable) && !defined(__NVCC__)
 + // https://github.com/llvm/llvm-project/pull/127636#pullrequestreview-2637005293
 + // In the current implementation, __builtin_is_cpp_trivially_relocatable will
 + // only return true for types that are trivially relocatable according to the
