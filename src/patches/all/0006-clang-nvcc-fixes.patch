@@ -1,0 +1,26 @@
+diff --git a/absl/base/nullability.h b/absl/base/nullability.h
+index 2796a36..b1f7874 100644
+--- a/absl/base/nullability.h
++++ b/absl/base/nullability.h
+@@ -308,7 +308,7 @@
+ // Note: Compilers that don't support the `nullability_on_classes` feature will
+ // allow nullability annotations to be applied to any type, not just ones marked
+ // with `ABSL_NULLABILITY_COMPATIBLE`.
+-#if ABSL_HAVE_FEATURE(nullability_on_classes)
++#if ABSL_HAVE_FEATURE(nullability_on_classes) && !defined(__NVCC__)
+ #define ABSL_NULLABILITY_COMPATIBLE _Nullable
+ #else
+ #define ABSL_NULLABILITY_COMPATIBLE
+diff --git a/absl/meta/type_traits.h b/absl/meta/type_traits.h
+index 02c1e63..a85892f 100644
+--- a/absl/meta/type_traits.h
++++ b/absl/meta/type_traits.h
+@@ -377,7 +377,7 @@ using swap_internal::Swap;
+ //
+ // According to https://github.com/abseil/abseil-cpp/issues/1479, this does not
+ // work with NVCC either.
+-#if ABSL_HAVE_BUILTIN(__builtin_is_cpp_trivially_relocatable)
++#if ABSL_HAVE_BUILTIN(__builtin_is_cpp_trivially_relocatable) && !defined(__NVCC__)
+ // https://github.com/llvm/llvm-project/pull/127636#pullrequestreview-2637005293
+ // In the current implementation, __builtin_is_cpp_trivially_relocatable will
+ // only return true for types that are trivially relocatable according to the
