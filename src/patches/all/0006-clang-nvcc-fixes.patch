@@ -13,7 +13,7 @@ index 0000000..6ef1375
 + // allow nullability annotations to be applied to any type, not just ones marked
 + // with `ABSL_NULLABILITY_COMPATIBLE`.
 +-#if ABSL_HAVE_FEATURE(nullability_on_classes)
-++#if ABSL_HAVE_FEATURE(nullability_on_classes) && !defined(__NVCC__)
+++#if 0
 + #define ABSL_NULLABILITY_COMPATIBLE _Nullable
 + #else
 + #define ABSL_NULLABILITY_COMPATIBLE
@@ -26,7 +26,7 @@ index 0000000..6ef1375
 + // According to https://github.com/abseil/abseil-cpp/issues/1479, this does not
 + // work with NVCC either.
 +-#if ABSL_HAVE_BUILTIN(__builtin_is_cpp_trivially_relocatable)
-++#if ABSL_HAVE_BUILTIN(__builtin_is_cpp_trivially_relocatable) && !defined(__NVCC__)
+++#if 0
 + // https://github.com/llvm/llvm-project/pull/127636#pullrequestreview-2637005293
 + // In the current implementation, __builtin_is_cpp_trivially_relocatable will
 + // only return true for types that are trivially relocatable according to the
