@@ -36,16 +36,6 @@ class CompressorStream extends TransformStream<Uint8Array<ArrayBuffer>, Uint8Arr
 }
 
 const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux', Record<'cudnn' | 'trt', string>>> = {
-	12: {
-		linux: {
-			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.23.2.1_cuda12-archive.tar.xz',
-			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/tars/TensorRT-10.15.1.29.Linux.x86_64-gnu.cuda-12.9.tar.gz'
-		},
-		win32: {
-			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.23.2.1_cuda12-archive.zip',
-			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/zip/TensorRT-10.15.1.29.Windows.amd64.cuda-12.9.zip'
-		}
-	},
 	13: {
 		linux: {
 			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.23.2.1_cuda13-archive.tar.xz',
@@ -91,8 +81,8 @@ await new Command()
 	.option('--android', 'Target Android')
 	.option('--cuda <version:integer>', 'Enable CUDA EP', {
 		value(value: number) {
-			if (value !== 12 && value !== 13) {
-				throw new ValidationError('--cuda must be either 12 or 13');
+			if (value !== 13) {
+				throw new ValidationError('--cuda must be 13');
 			}
 			return value;
 		}

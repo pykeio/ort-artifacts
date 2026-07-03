@@ -99,7 +99,7 @@ jobs:
           method: network
           use-github-cache: false
           # sub-packages: '["nvcc", "cudart", "cublas", "nvrtc"]'
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         if: inputs.target == 'aarch64-linux-android'
         with:
           java-version: "17"
@@ -146,11 +146,11 @@ jobs:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} ${{ inputs.static && '-s' || '' }} ${{ inputs.args || '' }}
       - name: Attest build
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: artifact.tar.lzma2
           subject-name: ${{ inputs.target }}${{ inputs.feature-set != 'none' && format('+{0}', inputs.feature-set) || '' }}.tar.lzma2
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.target }}${{ inputs.feature-set != 'none' && format('+{0}', inputs.feature-set) || '' }}.tar.lzma2
           path: artifact.tar.lzma2
