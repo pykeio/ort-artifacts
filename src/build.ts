@@ -154,11 +154,10 @@ await new Command()
 		const cudaArchives = options.cuda ? CUDA_ARCHIVES[options.cuda][platform as 'win32' | 'linux'] : null;
 
 		if (platform === 'linux' && !options.android) {
-			env.CC = 'clang-22';
-			env.CXX = 'clang++-22';
+			env.CC = 'clang-21';
+			env.CXX = 'clang++-21';
 			if (options.cuda) {
-				cudaFlags.push('-ccbin', 'clang++-22');
-				cudaFlags.push('-allow-unsupported-compiler');
+				cudaFlags.push('-ccbin', 'clang++-21');
 			}
 		} else if (platform === 'win32') {
 			args.push('-G', options.vs2026 ? 'Visual Studio 18 2026' : 'Visual Studio 17 2022');
