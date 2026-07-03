@@ -16,7 +16,7 @@ on:
         required: true
       args:
         type: string
-        required: true
+        required: false
       static:
         type: boolean
         default: true
@@ -144,7 +144,7 @@ jobs:
       - name: Run builder
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-        run: deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} ${{ inputs.static && '-s' || '' }} ${{ inputs.args }}
+        run: deno run -A src/build.ts -v ${{ inputs.onnxruntime-version }} ${{ inputs.static && '-s' || '' }} ${{ inputs.args || '' }}
       - name: Attest build
         uses: actions/attest-build-provenance@v3
         with:
