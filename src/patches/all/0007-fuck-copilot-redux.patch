@@ -1,0 +1,120 @@
+diff --git a/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu b/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu
+index 9137fcf..4a70110 100644
+--- a/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu
++++ b/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu
+@@ -656,6 +656,36 @@ __global__ void LinearAttentionRecurrentKernelFixedShape(
+ 
+ }  // anonymous namespace
+ 
++template <typename T, int DK, int DV>
++static Status LaunchFixedShapeKernel(
++    dim3 grid, cudaStream_t stream,
++    const T* query, const T* key, const T* value, T* present_state,
++    const T* decay, const T* beta, T* output,
++    int seq_len, int q_num_heads, int kv_num_heads, int n_k_heads,
++    int output_hidden, float scale,
++    bool needs_decay, bool decay_per_key_dim, bool needs_beta, bool beta_per_head, bool needs_retrieval) {
++  constexpr int max_dim = (DK > DV) ? DK : DV;
++  const size_t fixed_smem_size = (static_cast<size_t>(DK) * DV + DK + max_dim) * sizeof(float);
++  const dim3 fixed_block(max_dim, 1, 1);
++
++  if (fixed_smem_size > 48 * 1024) {
++    cudaError_t attr_err = cudaFuncSetAttribute(
++        LinearAttentionRecurrentKernelFixedShape<T, DK, DV>,
++        cudaFuncAttributeMaxDynamicSharedMemorySize,
++        static_cast<int>(fixed_smem_size));
++    if (attr_err != cudaSuccess) {
++      return CUDA_CALL(attr_err);
++    }
++  }
++
++  LinearAttentionRecurrentKernelFixedShape<T, DK, DV><<<grid, fixed_block, fixed_smem_size, stream>>>(
++      query, key, value, present_state, decay, beta, output,
++      seq_len, q_num_heads, kv_num_heads, n_k_heads, output_hidden, scale,
++      needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
++
++  return CUDA_CALL(cudaGetLastError());
++}
++
+ template <typename T>
+ Status LaunchLinearAttentionKernel(
+     cudaStream_t stream,
+@@ -685,44 +715,30 @@ Status LaunchLinearAttentionKernel(
+ 
+   int output_hidden = std::max(q_num_heads, kv_num_heads) * d_v;
+ 
+-  auto launch_fixed = [&](auto dk_tag, auto dv_tag) -> Status {
+-    constexpr int DK = decltype(dk_tag)::value;
+-    constexpr int DV = decltype(dv_tag)::value;
+-    constexpr int max_dim = (DK > DV) ? DK : DV;
+-    // Layout: S_smem[DK*DV] + k_buf[DK] + s_scratch[max(DK,DV)]
+-    const size_t fixed_smem_size = (static_cast<size_t>(DK) * DV + DK + max_dim) * sizeof(float);
+-    const dim3 fixed_block(max_dim, 1, 1);
+-
+-    if (fixed_smem_size > 48 * 1024) {
+-      cudaError_t attr_err = cudaFuncSetAttribute(
+-          LinearAttentionRecurrentKernelFixedShape<T, DK, DV>,
+-          cudaFuncAttributeMaxDynamicSharedMemorySize,
+-          static_cast<int>(fixed_smem_size));
+-      if (attr_err != cudaSuccess) {
+-        return CUDA_CALL(attr_err);
+-      }
+-    }
+-
+-    LinearAttentionRecurrentKernelFixedShape<T, DK, DV><<<grid, fixed_block, fixed_smem_size, stream>>>(
+-        query, key, value, present_state, decay, beta, output,
+-        seq_len, q_num_heads, kv_num_heads, n_k_heads, output_hidden, scale,
+-        needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+-
+-    return CUDA_CALL(cudaGetLastError());
+-  };
+-
+   // Fast paths for common (d_k, d_v) pairs
+   if (d_k == 64 && d_v == 64 && max_threads_per_block >= 64) {
+-    return launch_fixed(std::integral_constant<int, 64>{}, std::integral_constant<int, 64>{});
++    return LaunchFixedShapeKernel<T, 64, 64>(
++        grid, stream, query, key, value, present_state, decay, beta, output,
++        seq_len, q_num_heads, kv_num_heads, n_k_heads, output_hidden, scale,
++        needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+   }
+   if (d_k == 128 && d_v == 128 && max_threads_per_block >= 128) {
+-    return launch_fixed(std::integral_constant<int, 128>{}, std::integral_constant<int, 128>{});
++    return LaunchFixedShapeKernel<T, 128, 128>(
++        grid, stream, query, key, value, present_state, decay, beta, output,
++        seq_len, q_num_heads, kv_num_heads, n_k_heads, output_hidden, scale,
++        needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+   }
+   if (d_k == 128 && d_v == 64 && max_threads_per_block >= 128) {
+-    return launch_fixed(std::integral_constant<int, 128>{}, std::integral_constant<int, 64>{});
++    return LaunchFixedShapeKernel<T, 128, 64>(
++        grid, stream, query, key, value, present_state, decay, beta, output,
++        seq_len, q_num_heads, kv_num_heads, n_k_heads, output_hidden, scale,
++        needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+   }
+   if (d_k == 64 && d_v == 128 && max_threads_per_block >= 128) {
+-    return launch_fixed(std::integral_constant<int, 64>{}, std::integral_constant<int, 128>{});
++    return LaunchFixedShapeKernel<T, 64, 128>(
++        grid, stream, query, key, value, present_state, decay, beta, output,
++        seq_len, q_num_heads, kv_num_heads, n_k_heads, output_hidden, scale,
++        needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+   }
+ 
+   // Generic fallback
+diff --git a/onnxruntime/contrib_ops/cuda/bert/xqa/utils.cuh b/onnxruntime/contrib_ops/cuda/bert/xqa/utils.cuh
+index 3335707..5a0ddbd 100644
+--- a/onnxruntime/contrib_ops/cuda/bert/xqa/utils.cuh
++++ b/onnxruntime/contrib_ops/cuda/bert/xqa/utils.cuh
+@@ -203,11 +203,8 @@ __device__ __host__ inline Vec<Dst, size> convert(Vec<Src, size> const& src) {
+       dst[size - 1] = Dst{src[size - 1]};
+     }
+   } else if constexpr (mha::is_same_v<Src, __nv_fp8_e4m3> && mha::is_same_v<Dst, float>) {
+-    for (uint32_t i = 0; i < size - 1; i += 2) {
+-      reinterpret_cast<float2&>(dst[i]) = float2(reinterpret_cast<__nv_fp8x2_e4m3 const&>(src[i]));
+-    }
+-    if constexpr (size % 2 != 0) {
+-      dst[size - 1] = Dst{src[size - 1]};
++    for (uint32_t i = 0; i < size; i++) {
++      dst[i] = Dst{src[i]};
+     }
+   } else if constexpr (mha::is_same_v<Src, float> && mha::is_same_v<Dst, __nv_fp8_e4m3>) {
+     for (uint32_t i = 0; i < size - 1; i += 2) {
