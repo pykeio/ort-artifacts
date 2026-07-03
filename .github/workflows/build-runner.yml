@@ -135,9 +135,9 @@ jobs:
           echo "Installing cmake 3.31.6 from custom tap..."
           brew install "$tap_name/cmake"
         shell: bash
-      - name: Delete bad patch
+      - name: Use correct patch
         if: runner.os == 'Windows'
-        run: del C:/Strawberry/c/bin/patch.exe
+        run: echo "C:\Program Files\Git\usr\bin" >> $env:GITHUB_PATH
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
