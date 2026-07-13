@@ -30,30 +30,30 @@ jobs:
           - target: aarch64-apple-darwin
             args: "--coreml -A aarch64 -N"
             static: true
-            feature-set: none
+            feature-set: coreml
             runs-on: macos-15
           - target: aarch64-pc-windows-msvc
             args: "-A aarch64 --directml"
             static: true
-            feature-set: none
+            feature-set: directml
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
             args: "--directml"
             static: true
-            feature-set: none
+            feature-set: directml
             runs-on: windows-2022
 
           # CUDA + TensorRT + NVRTX
           - target: x86_64-unknown-linux-gnu
             args: "--cuda=13 --trt --nvrtx -N"
             static: true
-            feature-set: cu13
+            feature-set: cuda13,tensorrt,nvrtx
             cuda-version: "13.2.0"
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
             args: "--directml --cuda=13 --trt --nvrtx"
             static: true
-            feature-set: cu13
+            feature-set: cuda13,tensorrt,nvrtx,directml
             cuda-version: "13.2.0"
             runs-on: windows-2022
 
@@ -61,34 +61,34 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             args: "--webgpu -N"
             static: true
-            feature-set: wgpu
+            feature-set: webgpu
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
             args: "--webgpu --vs2026"
             static: true
-            feature-set: wgpu
+            feature-set: webgpu
             runs-on: windows-2025
           - target: aarch64-apple-darwin
             args: "--coreml -A aarch64 -N --webgpu"
             static: true
-            feature-set: wgpu
+            feature-set: coreml,webgpu
             runs-on: macos-15
 
           # mobile
           - target: aarch64-apple-ios
             args: "-A aarch64 --iphoneos --coreml -N"
             static: true
-            feature-set: none
+            feature-set: coreml
             runs-on: macos-15
           - target: aarch64-apple-ios-sim
             args: "-A aarch64 --iphonesimulator --coreml -N"
             static: true
-            feature-set: none
+            feature-set: coreml
             runs-on: macos-15
           - target: aarch64-linux-android
             args: "-A aarch64 --android --nnapi -N"
             static: true
-            feature-set: none
+            feature-set: nnapi
             runs-on: ubuntu-24.04
 
           # standalone NVRTX
