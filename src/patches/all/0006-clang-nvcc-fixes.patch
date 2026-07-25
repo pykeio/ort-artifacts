@@ -1,7 +1,7 @@
-diff --git a/cmake/patches/abseil/absl_cuda_warnings.patch b/cmake/patches/abseil/absl_cuda_warnings.patch
+diff --git a/cmake/vcpkg-ports/abseil/absl_cuda_warnings.patch b/cmake/vcpkg-ports/abseil/absl_cuda_warnings.patch
 index e803847..4aae5e4 100644
---- a/cmake/patches/abseil/absl_cuda_warnings.patch
-+++ b/cmake/patches/abseil/absl_cuda_warnings.patch
+--- a/cmake/vcpkg-ports/abseil/absl_cuda_warnings.patch
++++ b/cmake/vcpkg-ports/abseil/absl_cuda_warnings.patch
 @@ -56,3 +56,29 @@ index 1234567..abcdefg 100644
     seed += uint16_t{0xad53};
     return seed;

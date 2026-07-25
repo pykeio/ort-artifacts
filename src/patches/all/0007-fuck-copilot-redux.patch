@@ -1,11 +1,11 @@
 diff --git a/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu b/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu
-index 9137fcf..4a70110 100644
+index b27641c..88fb385 100644
 --- a/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu
 +++ b/onnxruntime/contrib_ops/cuda/bert/linear_attention_impl.cu
-@@ -656,6 +656,36 @@ __global__ void LinearAttentionRecurrentKernelFixedShape(
- 
+@@ -981,6 +981,66 @@ __global__ void LinearAttentionDecodeColKernel(
+
  }  // anonymous namespace
- 
+
 +template <typename T, int DK, int DV>
 +static Status LaunchFixedShapeKernel(
 +    dim3 grid, cudaStream_t stream,
@@ -36,13 +36,99 @@ index 9137fcf..4a70110 100644
 +  return CUDA_CALL(cudaGetLastError());
 +}
 +
++template <typename T, int DK>
++static Status LaunchFixedShapeDecodeKernel(
++    dim3 decode_grid, dim3 decode_block, cudaStream_t stream,
++    const T* query, const T* key, const T* value, T* present_state,
++    const T* decay, const T* beta, T* output,
++    int seq_len, int q_num_heads, int kv_num_heads, int n_k_heads,
++    int d_v, int output_hidden, float scale,
++    bool needs_decay, bool decay_per_key_dim, bool needs_beta, bool beta_per_head, bool needs_retrieval) {
++  LinearAttentionDecodeKernel<T, DK><<<decode_grid, decode_block, 0, stream>>>(
++      query, key, value, present_state, decay, beta, output,
++      seq_len, q_num_heads, kv_num_heads, n_k_heads, d_v, output_hidden, scale,
++      needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
++  return CUDA_CALL(cudaGetLastError());
++}
++
++template <typename T, int DK>
++static Status LaunchFixedShapeDecodeColKernel(
++    dim3 decode_grid, dim3 decode_block, cudaStream_t stream,
++    const T* query, const T* key, const T* value, T* present_state,
++    const T* decay, const T* beta, T* output,
++    int seq_len, int q_num_heads, int kv_num_heads, int n_k_heads,
++    int d_v, int output_hidden, float scale,
++    bool needs_decay, bool decay_per_key_dim, bool needs_beta, bool beta_per_head, bool needs_retrieval) {
++  LinearAttentionDecodeColKernel<T, DK><<<decode_grid, decode_block, 0, stream>>>(
++      query, key, value, present_state, decay, beta, output,
++      seq_len, q_num_heads, kv_num_heads, n_k_heads, d_v, output_hidden, scale,
++      needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
++  return CUDA_CALL(cudaGetLastError());
++}
++
  template <typename T>
  Status LaunchLinearAttentionKernel(
      cudaStream_t stream,
-@@ -685,44 +715,30 @@ Status LaunchLinearAttentionKernel(
- 
-   int output_hidden = std::max(q_num_heads, kv_num_heads) * d_v;
- 
+@@ -1032,19 +1092,16 @@ Status LaunchLinearAttentionKernel(
+                              (d_v + kColsPerBlock - 1) / kColsPerBlock);
+       const dim3 decode_block(kColsPerBlock, 1, 1);
+
+-      auto launch_col = [&](auto dk_tag) -> Status {
+-        constexpr int DK = decltype(dk_tag)::value;
+-        LinearAttentionDecodeColKernel<T, DK><<<decode_grid, decode_block, 0, stream>>>(
+-            query, key, value, present_state, decay, beta, output,
++      if (d_k == 64) {
++        return LaunchFixedShapeDecodeColKernel<T, 64>(
++            decode_grid, decode_block, stream, query, key, value, present_state, decay, beta, output,
+             seq_len, q_num_heads, kv_num_heads, n_k_heads, d_v, output_hidden, scale,
+             needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+-        return CUDA_CALL(cudaGetLastError());
+-      };
+-
+-      if (d_k == 64) {
+-        return launch_col(std::integral_constant<int, 64>{});
+       } else if (d_k == 128) {
+-        return launch_col(std::integral_constant<int, 128>{});
++        return LaunchFixedShapeDecodeColKernel<T, 128>(
++            decode_grid, decode_block, stream, query, key, value, present_state, decay, beta, output,
++            seq_len, q_num_heads, kv_num_heads, n_k_heads, d_v, output_hidden, scale,
++            needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+       }
+     }
+
+@@ -1052,62 +1109,48 @@ Status LaunchLinearAttentionKernel(
+                            (d_v + kWarpsPerBlock - 1) / kWarpsPerBlock);
+     const dim3 decode_block(32, kWarpsPerBlock, 1);
+
+-    auto launch_decode = [&](auto dk_tag) -> Status {
+-      constexpr int DK = decltype(dk_tag)::value;
+-      LinearAttentionDecodeKernel<T, DK><<<decode_grid, decode_block, 0, stream>>>(
+-          query, key, value, present_state, decay, beta, output,
++    if (d_k == 64) {
++      return LaunchFixedShapeDecodeKernel<T, 64>(
++          decode_grid, decode_block, stream, query, key, value, present_state, decay, beta, output,
+           seq_len, q_num_heads, kv_num_heads, n_k_heads, d_v, output_hidden, scale,
+           needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+-      return CUDA_CALL(cudaGetLastError());
+-    };
+-
+-    if (d_k == 64) {
+-      return launch_decode(std::integral_constant<int, 64>{});
+     } else if (d_k == 128) {
+-      return launch_decode(std::integral_constant<int, 128>{});
++      return LaunchFixedShapeDecodeKernel<T, 128>(
++          decode_grid, decode_block, stream, query, key, value, present_state, decay, beta, output,
++          seq_len, q_num_heads, kv_num_heads, n_k_heads, d_v, output_hidden, scale,
++          needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+     } else {  // d_k == 256
+-      return launch_decode(std::integral_constant<int, 256>{});
++      return LaunchFixedShapeDecodeKernel<T, 256>(
++          decode_grid, decode_block, stream, query, key, value, present_state, decay, beta, output,
++          seq_len, q_num_heads, kv_num_heads, n_k_heads, d_v, output_hidden, scale,
++          needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
+     }
+   }
+
 -  auto launch_fixed = [&](auto dk_tag, auto dv_tag) -> Status {
 -    constexpr int DK = decltype(dk_tag)::value;
 -    constexpr int DV = decltype(dv_tag)::value;
@@ -98,7 +184,7 @@ index 9137fcf..4a70110 100644
 +        seq_len, q_num_heads, kv_num_heads, n_k_heads, output_hidden, scale,
 +        needs_decay, decay_per_key_dim, needs_beta, beta_per_head, needs_retrieval);
    }
- 
+
    // Generic fallback
 diff --git a/onnxruntime/contrib_ops/cuda/bert/xqa/utils.cuh b/onnxruntime/contrib_ops/cuda/bert/xqa/utils.cuh
 index 3335707..5a0ddbd 100644
