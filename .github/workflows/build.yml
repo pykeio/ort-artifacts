@@ -101,7 +101,7 @@ jobs:
           - target: x86_64-pc-windows-msvc
             args: "--nvrtx --directml"
             static: true
-            feature-set: nvrtx
+            feature-set: nvrtx,directml
             cuda-version: "13.2.0"
             runs-on: windows-2022
 
