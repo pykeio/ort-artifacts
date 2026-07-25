@@ -204,3 +204,16 @@ index 3335707..5a0ddbd 100644
      }
    } else if constexpr (mha::is_same_v<Src, float> && mha::is_same_v<Dst, __nv_fp8_e4m3>) {
      for (uint32_t i = 0; i < size - 1; i += 2) {
+diff --git a/onnxruntime/core/providers/cuda/llm/attention.cc b/onnxruntime/core/providers/cuda/llm/attention.cc
+index dc53b02..7fba703 100644
+--- a/onnxruntime/core/providers/cuda/llm/attention.cc
++++ b/onnxruntime/core/providers/cuda/llm/attention.cc
+@@ -34,7 +34,7 @@ namespace llm_attention_detail {
+ template <typename T>
+ float MaskedBiasSentinel() {
+   return std::max(static_cast<float>(std::numeric_limits<T>::lowest()),
+-                  ::onnxruntime::contrib::cuda::kCutlassSafeMaskFilterValue);
++                  -1.0e+30f);
+ }
+
+ template <typename NodeType>
