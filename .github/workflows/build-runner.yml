@@ -84,7 +84,7 @@ jobs:
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
       - name: Remove unnecessary software (non-Android)
-        if: runner.os == 'Linux' && inputs.target != 'aarch64-linux-android'
+        if: runner.os == 'Linux' && !contains(inputs.target, 'android')
         run: |
           sudo rm -rf /usr/local/lib/android
       - uses: actions/checkout@v7
@@ -100,13 +100,13 @@ jobs:
           use-github-cache: false
           # sub-packages: '["nvcc", "cudart", "cublas", "nvrtc"]'
       - uses: actions/setup-java@v5
-        if: inputs.target == 'aarch64-linux-android'
+        if: contains(inputs.target, 'android')
         with:
           java-version: "17"
           distribution: "temurin"
       - uses: nttld/setup-ndk@v1
         id: setup-ndk
-        if: inputs.target == 'aarch64-linux-android'
+        if: contains(inputs.target, 'android')
         with:
           add-to-path: false
           ndk-version: r28

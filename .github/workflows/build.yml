@@ -90,6 +90,11 @@ jobs:
             static: true
             feature-set: nnapi
             runs-on: ubuntu-24.04
+          - target: x86_64-linux-android
+            args: "-A x86_64 --android --nnapi -N"
+            static: true
+            feature-set: nnapi
+            runs-on: ubuntu-24.04
 
           # standalone NVRTX
           - target: x86_64-unknown-linux-gnu
