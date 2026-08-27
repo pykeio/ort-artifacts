@@ -171,7 +171,8 @@ await new Command()
 		if (platform === 'linux' && options.android) {
 			// ANDROID_NDK_HOME and ANDROID_SDK_ROOT are expected to be set in the environment.
 			args.push(`-DANDROID_PLATFORM=android-${Deno.env.get("ANDROID_API")}`);
-			args.push('-DANDROID_ABI=arm64-v8a');
+			const abi = (options.arch === 'aarch64') ? 'arm64-v8a' : 'x86_64';
+			args.push(`-DANDROID_ABI=${abi}`);
 			args.push('-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=false');
 			args.push(`-DCMAKE_TOOLCHAIN_FILE=${join(Deno.env.get('ANDROID_NDK_HOME')!, 'build', 'cmake', 'android.toolchain.cmake')}`);
 		}
