@@ -1,0 +1,47 @@
+diff --git a/cmake/onnxruntime_cuda_source_filters.cmake b/cmake/onnxruntime_cuda_source_filters.cmake
+index e65b58a..013c2f6 100644
+--- a/cmake/onnxruntime_cuda_source_filters.cmake
++++ b/cmake/onnxruntime_cuda_source_filters.cmake
+@@ -165,9 +165,7 @@ function(onnxruntime_extract_llm_sources CU_SRC_LIST)
+   set(_llm_sm90_srcs)
+   set(_llm_fp4_srcs)
+   set(_llm_excluded_srcs)
+-  if(WIN32)
+-    list(FILTER _list EXCLUDE REGEX "/moe_gemm/deep_gemm_sm90\\.cu$")
+-  endif()
++  list(FILTER _list EXCLUDE REGEX "/moe_gemm/deep_gemm_sm90\\.cu$")
+   foreach(_src IN LISTS _list)
+     if(_src MATCHES "/contrib_ops/cuda/llm/.*\\.cu$")
+       if(onnxruntime_USE_FPA_INTB_GEMM AND NOT onnxruntime_USE_FPA_INTB_GEMM_FULL AND
+diff --git a/cmake/onnxruntime_providers_cuda.cmake b/cmake/onnxruntime_providers_cuda.cmake
+index 52eb245..fab825d 100644
+--- a/cmake/onnxruntime_providers_cuda.cmake
++++ b/cmake/onnxruntime_providers_cuda.cmake
+@@ -393,11 +393,6 @@
+ 
+     include(cutlass)
+     target_include_directories(${target} PRIVATE ${cutlass_SOURCE_DIR}/include ${cutlass_SOURCE_DIR}/examples ${cutlass_SOURCE_DIR}/tools/util/include)
+-    if(ORT_HAS_SM90_OR_LATER AND NOT WIN32 AND NOT onnxruntime_CUDA_MINIMAL AND NOT onnxruntime_DISABLE_CONTRIB_OPS)
+-      include(deep_gemm)
+-      target_include_directories(${target} PRIVATE ${deep_gemm_SOURCE_DIR}/deep_gemm/include)
+-      target_compile_definitions(${target} PRIVATE USE_DEEP_GEMM)
+-    endif()
+     target_link_libraries(${target} PRIVATE Eigen3::Eigen)
+     target_include_directories(${target} PRIVATE ${ONNXRUNTIME_ROOT} ${CMAKE_CURRENT_BINARY_DIR} PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
+ 
+diff --git a/cmake/onnxruntime_providers_cuda_plugin.cmake b/cmake/onnxruntime_providers_cuda_plugin.cmake
+index 9e940b0..1971aa9 100644
+--- a/cmake/onnxruntime_providers_cuda_plugin.cmake
++++ b/cmake/onnxruntime_providers_cuda_plugin.cmake
+@@ -292,11 +292,6 @@ endif()
+ 
+ include(cudnn_frontend)
+ include(cutlass)
+-if(ORT_HAS_SM90_OR_LATER AND NOT WIN32 AND NOT onnxruntime_DISABLE_CONTRIB_OPS)
+-  include(deep_gemm)
+-  target_include_directories(onnxruntime_providers_cuda_plugin PRIVATE ${deep_gemm_SOURCE_DIR}/deep_gemm/include)
+-  target_compile_definitions(onnxruntime_providers_cuda_plugin PRIVATE USE_DEEP_GEMM)
+-endif()
+ 
+ # TMA compile definitions — mirror config_cuda_provider_shared_module in onnxruntime_providers_cuda.cmake
+ if(ORT_HAS_SM90_OR_LATER)
