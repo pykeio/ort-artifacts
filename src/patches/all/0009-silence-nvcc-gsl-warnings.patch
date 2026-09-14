@@ -1,0 +1,34 @@
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index 7646f3a..851ada3 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -421,7 +421,9 @@ onnxruntime_fetchcontent_declare(
+   URL_HASH SHA1=${DEP_SHA1_microsoft_gsl}
+   # Stringify fix for GSL_SUPPRESS on MSVC (C4875). Remove when GSL ships a release
+   # containing microsoft/GSL#1213 (commit 543d0dd).
+-  PATCH_COMMAND ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/gsl/1213.patch
++  PATCH_COMMAND
++    ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/gsl/1213.patch &&
++    ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/gsl/nvcc_clang.patch
+   EXCLUDE_FROM_ALL
+   FIND_PACKAGE_ARGS 4.0 NAMES Microsoft.GSL
+ )
+diff --git a/cmake/patches/gsl/nvcc_clang.patch b/cmake/patches/gsl/nvcc_clang.patch
+new file mode 100644
+index 0000000..edc3956
+--- /dev/null
++++ b/cmake/patches/gsl/nvcc_clang.patch
+@@ -0,0 +1,13 @@
++diff --git a/include/gsl/assert b/include/gsl/assert
++index e166db0..e8a668a 100644
++--- a/include/gsl/assert
+++++ b/include/gsl/assert
++@@ -45,7 +45,7 @@
++ // make suppress attributes parse for some compilers
++ // Hopefully temporary until suppression standardization occurs
++ //
++-#if defined(__clang__)
+++#if defined(__clang__) && !defined(__NVCC__)
++ #define GSL_SUPPRESS(x) [[gsl::suppress(#x)]]
++ #else
++ #if defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__NVCC__)
