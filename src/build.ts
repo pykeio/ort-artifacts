@@ -215,7 +215,6 @@ await new Command()
 			args.push('-Donnxruntime_USE_FLASH_ATTENTION=OFF');
 			args.push('-Donnxruntime_USE_MEMORY_EFFICIENT_ATTENTION=OFF');
 			args.push('-Donnxruntime_USE_FP8_KV_CACHE=OFF');
-			args.push('-Donnxruntime_DISABLE_CONTRIB_OPS=ON');
 			args.push('-Donnxruntime_QUICK_BUILD=ON');
 
 			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
