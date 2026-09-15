@@ -1,0 +1,20 @@
+diff --git a/cmake/onnxruntime_providers_cpu.cmake b/cmake/onnxruntime_providers_cpu.cmake
+index b7d2bbf..02bb9bf 100644
+--- a/cmake/onnxruntime_providers_cpu.cmake
++++ b/cmake/onnxruntime_providers_cpu.cmake
+@@ -132,13 +132,8 @@ endif()
+ # library: the Xcode generator hash-suffixes object filenames when source basenames collide, as
+ # some of these sources do, while TARGET_OBJECTS expands to the unsuffixed names, so libtool fails
+ # to find them.
+-if (MSVC AND onnxruntime_BUILD_SHARED_LIB)
+-  onnxruntime_add_object_library(onnxruntime_providers_obj ${onnxruntime_providers_src})
+-  set(onnxruntime_providers_target onnxruntime_providers_obj)
+-else()
+-  onnxruntime_add_static_library(onnxruntime_providers ${onnxruntime_providers_src})
+-  set(onnxruntime_providers_target onnxruntime_providers)
+-endif()
++onnxruntime_add_static_library(onnxruntime_providers ${onnxruntime_providers_src})
++set(onnxruntime_providers_target onnxruntime_providers)
+ if (onnxruntime_REDUCED_OPS_BUILD)
+   add_op_reduction_include_dirs(${onnxruntime_providers_target})
+ endif()
