@@ -217,7 +217,7 @@ await new Command()
 			args.push('-Donnxruntime_USE_FP8_KV_CACHE=OFF');
 			args.push('-Donnxruntime_QUICK_BUILD=ON');
 
-			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
+			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90;120');
 			cudaFlags.push('-compress-mode=size');
 		}
 
