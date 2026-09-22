@@ -98,7 +98,8 @@ jobs:
           cuda: ${{ inputs.cuda-version }}
           method: network
           use-github-cache: false
-          sub-packages: ${{ runner.os == 'Windows' && '["nvcc","crt","nvvm","cudart","cublas","cublas_dev","cufft","cufft_dev","curand","curand_dev","cusparse","cusparse_dev","cusolver","cusolver_dev","nvrtc","nvrtc_dev","nvjitlink","nvtx","nvml_dev","cupti","cuda_profiler_api","thrust","visual_studio_integration"]' || '[]' }}
+          sub-packages: ${{ runner.os == 'Windows' && '["nvcc","crt","nvvm","cudart","cublas","cublas_dev","cufft","cufft_dev","curand","curand_dev","cusparse","cusparse_dev","cusolver","cusolver_dev","nvrtc","nvrtc_dev","nvjitlink","nvtx","nvml_dev","cupti","cuda_profiler_api","thrust","visual_studio_integration"]' || '["nvcc","crt","cudart-dev","nvrtc-dev","cupti-dev","nvtx","nvml-dev","profiler-api","cccl","driver-dev"]' }}
+          non-cuda-sub-packages: ${{ runner.os == 'Linux' && '["libnvvm","libcublas-dev","libcufft-dev","libcurand-dev","libcusparse-dev","libcusolver-dev","libnvjitlink-dev"]' || '[]' }}
       - uses: actions/setup-java@v5
         if: contains(inputs.target, 'android')
         with:
