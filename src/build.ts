@@ -212,12 +212,12 @@ await new Command()
 
 		if (options.cuda || options.trt || options.nvrtx) {
 			args.push('-Donnxruntime_USE_FPA_INTB_GEMM=OFF');
-			args.push('-Donnxruntime_USE_FLASH_ATTENTION=OFF');
+			args.push('-Donnxruntime_USE_FLASH_ATTENTION=ON');
 			args.push('-Donnxruntime_USE_MEMORY_EFFICIENT_ATTENTION=OFF');
 			args.push('-Donnxruntime_USE_FP8_KV_CACHE=OFF');
 			args.push('-Donnxruntime_QUICK_BUILD=ON');
 
-			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90');
+			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90;120');
 			cudaFlags.push('-compress-mode=size');
 		}
 
