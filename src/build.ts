@@ -233,8 +233,8 @@ await new Command()
 			args.push('-Donnxruntime_USE_FP8_KV_CACHE=OFF');
 			args.push('-Donnxruntime_QUICK_BUILD=ON');
 
-			// aarch64: Jetson Orin (87), Jetson Thor (110), DGX Spark (121)
-			args.push(`-DCMAKE_CUDA_ARCHITECTURES=${isLinuxAarch64 ? '87;110;121' : '75;80;90;120'}`);
+			// aarch64: Jetson Orin (87), Grace Hopper (90), Grace Blackwell (100), Jetson Thor (110), DGX Spark (121)
+			args.push(`-DCMAKE_CUDA_ARCHITECTURES=${isLinuxAarch64 ? '87;90;100;110;121' : '75;80;90;120'}`);
 			cudaFlags.push('-compress-mode=size');
 		}
 
