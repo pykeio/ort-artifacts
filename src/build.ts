@@ -35,11 +35,15 @@ class CompressorStream extends TransformStream<Uint8Array<ArrayBuffer>, Uint8Arr
 	}
 }
 
-const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux', Record<'cudnn' | 'trt', string>>> = {
+const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux' | 'linux-aarch64', Record<'cudnn' | 'trt', string>>> = {
 	13: {
 		linux: {
 			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-x86_64/cudnn_jit-linux-x86_64-9.23.2.1_cuda13-archive.tar.xz',
 			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/tars/TensorRT-10.15.1.29.Linux.x86_64-gnu.cuda-13.1.tar.gz'
+		},
+		'linux-aarch64': {
+			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn_jit/linux-sbsa/cudnn_jit-linux-sbsa-9.23.2.1_cuda13-archive.tar.xz',
+			trt: 'https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.15.1/tars/TensorRT-10.15.1.29.Linux.aarch64-gnu.cuda-13.1.tar.gz'
 		},
 		win32: {
 			cudnn: 'https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.23.2.1_cuda13-archive.zip',
@@ -141,7 +145,19 @@ await new Command()
 		const compilerFlags = [];
 		const cudaFlags: string[] = [];
 
-		const cudaArchives = options.cuda ? CUDA_ARCHIVES[options.cuda][platform as 'win32' | 'linux'] : null;
+		const isLinuxAarch64 = platform === 'linux' && !options.android && options.arch === 'aarch64';
+		if (isLinuxAarch64 && (options.cuda || options.nvrtx)) {
+			// CUDA packages are only set up for native builds on an arm64 host
+			if (arch !== 'arm64') {
+				throw new ValidationError('CUDA on aarch64 Linux must be built on an arm64 host');
+			}
+			// TensorRT RTX has no Linux aarch64 release
+			if (options.nvrtx) {
+				throw new ValidationError('--nvrtx is not available on aarch64 Linux');
+			}
+		}
+
+		const cudaArchives = options.cuda ? CUDA_ARCHIVES[options.cuda][isLinuxAarch64 ? 'linux-aarch64' : platform as 'win32' | 'linux'] : null;
 
 		if (platform === 'linux' && !options.android) {
 			env.CC = 'clang-21';
@@ -217,7 +233,8 @@ await new Command()
 			args.push('-Donnxruntime_USE_FP8_KV_CACHE=OFF');
 			args.push('-Donnxruntime_QUICK_BUILD=ON');
 
-			args.push('-DCMAKE_CUDA_ARCHITECTURES=75;80;90;120');
+			// aarch64: Jetson Orin (87), Jetson Thor (110), DGX Spark (121)
+			args.push(`-DCMAKE_CUDA_ARCHITECTURES=${isLinuxAarch64 ? '87;110;121' : '75;80;90;120'}`);
 			cudaFlags.push('-compress-mode=size');
 		}
 
