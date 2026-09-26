@@ -51,8 +51,10 @@ const CUDA_ARCHIVES: Record<number, Record<'win32' | 'linux' | 'linux-aarch64', 
 		}
 	}
 };
-const NVRTX_ARCHIVES: Record<'win32' | 'linux', string> = {
+const NVRTX_ARCHIVES: Record<'win32' | 'linux' | 'linux-aarch64', string> = {
 	linux: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.4/TensorRT-RTX-1.4.0.76-Linux-x86_64-cuda-13.2-Release-external.tar.gz',
+	// 1.4 has no Linux aarch64 build, 1.5 is the first one (DGX Spark)
+	'linux-aarch64': 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.5/TensorRT-RTX-1.5.0.114-Linux-aarch64-cuda-13.2-Release-external.tar.zst',
 	win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.4/TensorRT-RTX-1.4.0.76-Windows-amd64-cuda-13.2-Release-external.zip'
 };
 
@@ -146,15 +148,9 @@ await new Command()
 		const cudaFlags: string[] = [];
 
 		const isLinuxAarch64 = platform === 'linux' && !options.android && options.arch === 'aarch64';
-		if (isLinuxAarch64 && (options.cuda || options.nvrtx)) {
-			// CUDA packages are only set up for native builds on an arm64 host
-			if (arch !== 'arm64') {
-				throw new ValidationError('CUDA on aarch64 Linux must be built on an arm64 host');
-			}
-			// TensorRT RTX has no Linux aarch64 release
-			if (options.nvrtx) {
-				throw new ValidationError('--nvrtx is not available on aarch64 Linux');
-			}
+		// CUDA packages are only set up for native builds on an arm64 host
+		if (isLinuxAarch64 && (options.cuda || options.nvrtx) && arch !== 'arm64') {
+			throw new ValidationError('CUDA on aarch64 Linux must be built on an arm64 host');
 		}
 
 		const cudaArchives = options.cuda ? CUDA_ARCHIVES[options.cuda][isLinuxAarch64 ? 'linux-aarch64' : platform as 'win32' | 'linux'] : null;
@@ -256,10 +252,15 @@ await new Command()
 			args.push(`-Donnxruntime_TENSORRT_HOME=${trtOutPath}`);
 		}
 		if (options.nvrtx) {
-			const trtxArchiveStream = await fetch(NVRTX_ARCHIVES[platform as 'linux' | 'win32']).then(c => c.body!);
+			const trtxArchiveUrl = NVRTX_ARCHIVES[isLinuxAarch64 ? 'linux-aarch64' : platform as 'linux' | 'win32'];
+			const trtxArchiveStream = await fetch(trtxArchiveUrl).then(c => c.body!);
 			const trtxOutPath = join(root, 'nvrtx');
 			await Deno.mkdir(trtxOutPath);
-			await $`tar xvzC ${trtxOutPath} --strip-components=1 -f -`.stdin(trtxArchiveStream);
+			if (trtxArchiveUrl.endsWith('.zst')) {
+				await $`tar --zstd -xvC ${trtxOutPath} --strip-components=1 -f -`.stdin(trtxArchiveStream);
+			} else {
+				await $`tar xvzC ${trtxOutPath} --strip-components=1 -f -`.stdin(trtxArchiveStream);
+			}
 			args.push(`-Donnxruntime_TENSORRT_RTX_HOME=${trtxOutPath}`);
 		}
 
