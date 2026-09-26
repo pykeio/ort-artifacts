@@ -1,0 +1,54 @@
+diff --git a/cmake/onnxruntime_providers_nv.cmake b/cmake/onnxruntime_providers_nv.cmake
+index ffb6fd2..d10772c 100644
+--- a/cmake/onnxruntime_providers_nv.cmake
++++ b/cmake/onnxruntime_providers_nv.cmake
+@@ -71,26 +71,26 @@ endif ()
+ 
+   MESSAGE(STATUS "Looking for ${TRT_RTX_LIB}")
+ 
+-  find_library(TENSORRT_LIBRARY_INFER ${TRT_RTX_LIB}
++  find_library(TENSORRT_RTX_LIBRARY_INFER ${TRT_RTX_LIB}
+     HINTS ${TENSORRT_RTX_ROOT}
+     PATH_SUFFIXES lib lib64 lib/x64)
+ 
+-  if (NOT TENSORRT_LIBRARY_INFER)
++  if (NOT TENSORRT_RTX_LIBRARY_INFER)
+     MESSAGE(STATUS "Can't find ${TRT_RTX_LIB}")
+   endif()
+ 
+   if (onnxruntime_USE_TENSORRT_BUILTIN_PARSER)
+     MESSAGE(STATUS "Looking for ${RTX_PARSER_LIB}")
+ 
+-    find_library(TENSORRT_LIBRARY_NVONNXPARSER ${RTX_PARSER_LIB}
++    find_library(TENSORRT_RTX_LIBRARY_NVONNXPARSER ${RTX_PARSER_LIB}
+       HINTS  ${TENSORRT_RTX_ROOT}
+       PATH_SUFFIXES lib lib64 lib/x64)
+ 
+-    if (NOT TENSORRT_LIBRARY_NVONNXPARSER)
++    if (NOT TENSORRT_RTX_LIBRARY_NVONNXPARSER)
+       MESSAGE(STATUS "Can't find ${RTX_PARSER_LIB}")
+     endif()
+ 
+-    set(TENSORRT_LIBRARY ${TENSORRT_LIBRARY_INFER} ${TENSORRT_LIBRARY_NVONNXPARSER})
++    set(TENSORRT_LIBRARY ${TENSORRT_RTX_LIBRARY_INFER} ${TENSORRT_RTX_LIBRARY_NVONNXPARSER})
+     MESSAGE(STATUS "Find TensorRT libs at ${TENSORRT_LIBRARY}")
+   else()
+     set(ONNX_USE_LITE_PROTO ON)
+@@ -122,7 +122,7 @@ endif ()
+     endif()
+     # Static libraries are just nvonnxparser_static on all platforms
+     set(onnxparser_link_libs nvonnxparser_static)
+-    set(TENSORRT_LIBRARY ${TENSORRT_LIBRARY_INFER})
++    set(TENSORRT_LIBRARY ${TENSORRT_RTX_LIBRARY_INFER})
+     MESSAGE(STATUS "Find TensorRT libs at ${TENSORRT_LIBRARY}")
+   endif()
+ 
+@@ -130,7 +130,7 @@ endif ()
+   # nvonnxparser_static is linked against tensorrt libraries in onnx-tensorrt
+   # See https://github.com/onnx/onnx-tensorrt/blob/8af13d1b106f58df1e98945a5e7c851ddb5f0791/CMakeLists.txt#L121
+   # However, starting from TRT 10 GA, nvonnxparser_static doesn't link against tensorrt libraries.
+-  # Therefore, the above code finds ${TENSORRT_LIBRARY_INFER}
++  # Therefore, the above code finds ${TENSORRT_RTX_LIBRARY_INFER}
+   set(trt_link_libs ${CMAKE_DL_LIBS} ${TENSORRT_LIBRARY})
+ 
+   file(GLOB_RECURSE onnxruntime_providers_nv_tensorrt_rtx_cc_srcs CONFIGURE_DEPENDS
