@@ -1,0 +1,16 @@
+diff --git a/cmake/external/cuda_configuration.cmake b/cmake/external/cuda_configuration.cmake
+index 47d6eef..3c29d1c 100644
+--- a/cmake/external/cuda_configuration.cmake
++++ b/cmake/external/cuda_configuration.cmake
+@@ -219,6 +219,11 @@ macro(setup_cuda_architectures)
+         set(HAS_CUDA_ARCH ON)
+         break()
+       endif()
++      # sm_121 builds the SM120 kernels too (COMPILE_BLACKWELL_SM120_TMA_GROUPED_GEMMS is set for 120 or 121)
++      if(CUDA_ARCH STREQUAL "120" AND CUDA_ARCH_ORIG MATCHES "^121([af])?$")
++        set(HAS_CUDA_ARCH ON)
++        break()
++      endif()
+     endforeach()
+     if(NOT HAS_CUDA_ARCH)
+       add_definitions("-DEXCLUDE_SM_${CUDA_ARCH}")
