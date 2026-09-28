@@ -87,6 +87,20 @@ jobs:
         if: runner.os == 'Linux' && !contains(inputs.target, 'android')
         run: |
           sudo rm -rf /usr/local/lib/android
+      - name: Add swap
+        if: runner.os == 'Linux' && inputs.cuda-version
+        run: |
+          # the CUTLASS kernels compiled in parallel can go over the 16 GB of RAM, so give them 16 GB of swap to fall back to
+          dir=/mnt
+          if [ ! -d /mnt ] || [ "$(df -BG --output=avail /mnt | tail -1 | tr -dc 0-9)" -lt 40 ]; then dir=/; fi
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile /swapfile
+          sudo fallocate -l 16G ${dir%/}/swapfile
+          sudo chmod 600 ${dir%/}/swapfile
+          sudo mkswap ${dir%/}/swapfile
+          sudo swapon ${dir%/}/swapfile
+          free -h
+          nohup sh -c 'while true; do free -m | awk "/Swap/ {print \$3}"; sleep 15; done' > /tmp/swap-usage.log 2>&1 &
       - uses: actions/checkout@v7
       - uses: egor-tensin/setup-clang@v2.3
         if: runner.os == 'Linux'
@@ -157,3 +171,6 @@ jobs:
           name: ${{ inputs.target }}${{ inputs.feature-set != 'none' && format('+{0}', inputs.feature-set) || '' }}.tar.lzma2
           path: artifact.tar.lzma2
           if-no-files-found: error
+      - name: Show peak swap use
+        if: always() && runner.os == 'Linux' && inputs.cuda-version
+        run: echo "peak swap used $(sort -n /tmp/swap-usage.log | tail -1) MB"
