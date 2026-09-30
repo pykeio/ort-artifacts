@@ -313,6 +313,8 @@ await new Command()
 			args.push('-Donnxruntime_USE_MIGRAPHX=ON');
 			args.push(`-Donnxruntime_MIGRAPHX_HOME=${rocmPath}`);
 			args.push(`-DCMAKE_PREFIX_PATH=${rocmPrefixes.join(';')}`);
+			// ROCm ships its own flatbuffers and nlohmann_json, use the versions ONNX Runtime bundles instead
+			args.push('-DFETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER');
 		}
 
 		if (platform === 'darwin') {
