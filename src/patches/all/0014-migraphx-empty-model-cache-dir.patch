@@ -1,0 +1,14 @@
+diff --git a/onnxruntime/core/providers/migraphx/migraphx_execution_provider_info.cc b/onnxruntime/core/providers/migraphx/migraphx_execution_provider_info.cc
+index 33ef366..2169e19 100644
+--- a/onnxruntime/core/providers/migraphx/migraphx_execution_provider_info.cc
++++ b/onnxruntime/core/providers/migraphx/migraphx_execution_provider_info.cc
+@@ -100,7 +100,8 @@ ProviderOptions MIGraphXExecutionProviderInfo::ToProviderOptions() const {
+       {std::string{migraphx_provider_option::kGpuExternalAlloc}, MakeStringWithClassicLocale(external_alloc)},
+       {std::string{migraphx_provider_option::kGpuExternalFree}, MakeStringWithClassicLocale(external_free)},
+       {std::string{migraphx_provider_option::kGpuExternalEmptyCache}, MakeStringWithClassicLocale(external_empty_cache)},
+-      {std::string{migraphx_provider_option::kModelCacheDir}, MakeStringWithClassicLocale(model_cache_dir)},
++      // streaming a std::filesystem::path quotes it, so an empty path would come back as the non-empty path ""
++      {std::string{migraphx_provider_option::kModelCacheDir}, model_cache_dir.string()},
+   };
+ }
+ 
