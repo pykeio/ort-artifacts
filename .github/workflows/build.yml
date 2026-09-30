@@ -116,6 +116,13 @@ jobs:
             cuda-version: "13.2.0"
             runs-on: windows-2022
 
+          # AMD MIGraphX
+          - target: x86_64-unknown-linux-gnu
+            args: "--migraphx -N"
+            static: true
+            feature-set: migraphx
+            runs-on: ubuntu-24.04
+
     with:
       onnxruntime-version: ${{ inputs.onnxruntime-version }}
       target: ${{ matrix.target }}
