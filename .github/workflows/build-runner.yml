@@ -101,6 +101,17 @@ jobs:
           sudo swapon ${dir%/}/swapfile
           free -h
           nohup sh -c 'while true; do free -m | awk "/Swap/ {print \$3}"; sleep 15; done' > /tmp/swap-usage.log 2>&1 &
+      - name: Install ROCm and MIGraphX
+        if: runner.os == 'Linux' && contains(inputs.feature-set, 'migraphx')
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://stable.repo.amd.com/rocm/gpg/packages.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/amdrocm.gpg
+          for repo in core migraphx; do
+            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/amdrocm.gpg] https://stable.repo.amd.com/rocm/$repo/packages/ubuntu2404 stable main"
+          done | sudo tee /etc/apt/sources.list.d/amdrocm.list
+          sudo apt-get update
+          # the kernels for one GPU are enough (0.7 GB instead of 12 GB for all of them), the build only links against libmigraphx_c
+          sudo apt-get install -y --no-install-recommends amdrocm-migraphx-dev amdrocm-dnn-dev10.0 amdrocm-blas-dev10.0 amdrocm-hipblas-common-dev10.0 amdrocm-dnn10.0-gfx908 amdrocm-blas10.0-gfx908
       - uses: actions/checkout@v7
       - uses: egor-tensin/setup-clang@v2.3
         if: runner.os == 'Linux'

@@ -175,6 +175,11 @@ if(onnxruntime_USE_ROCM)
     install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
     install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_rocm DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
+if(onnxruntime_USE_MIGRAPHX)
+    add_dependencies(onnxruntime onnxruntime_providers_shared onnxruntime_providers_migraphx)
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime_providers_migraphx DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
 if(onnxruntime_USE_WEBGPU)
     # both of these are required for some reason, LIBRARY RUNTIME doesn't work and it still copies to /bin, but at least it
     # *also* copies to /lib with this

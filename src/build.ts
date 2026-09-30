@@ -102,6 +102,7 @@ await new Command()
 	.option('--webgpu', 'Enable WebGPU EP')
 	.option('--openvino', 'Enable OpenVINO EP')
 	.option('--nnapi', 'Enable NNAPI EP')
+	.option('--migraphx', 'Enable AMD MIGraphX EP')
 	.option('-N, --ninja', 'build with ninja')
 	.option('--vs2026', 'Use Visual Studio 2026 generator')
 	.option('--debug', 'Build with Debug config instead of Release')
@@ -295,6 +296,26 @@ await new Command()
 		}
 		if(options.nnapi) {
 			args.push('-Donnxruntime_USE_NNAPI_BUILTIN=ON');
+		}
+		if (options.migraphx) {
+			// ROCm and MIGraphX packages are only set up for x86_64 Linux
+			if (platform !== 'linux' || options.android || options.arch !== 'x86_64') {
+				throw new ValidationError('--migraphx is only available on x86_64 Linux');
+			}
+			const rocmPath = Deno.env.get('ROCM_PATH') ?? '/opt/rocm';
+			// ROCm 10 keeps HIP in a versioned core-X.Y folder next to MIGraphX
+			const rocmPrefixes = [ rocmPath ];
+			for await (const entry of Deno.readDir(rocmPath)) {
+				if (entry.isDirectory && entry.name.startsWith('core-')) {
+					rocmPrefixes.push(join(rocmPath, entry.name));
+				}
+			}
+			args.push('-Donnxruntime_USE_MIGRAPHX=ON');
+			args.push('-Donnxruntime_DISABLE_RTTI=OFF');
+			args.push(`-Donnxruntime_MIGRAPHX_HOME=${rocmPath}`);
+			args.push(`-DCMAKE_PREFIX_PATH=${rocmPrefixes.join(';')}`);
+			// ROCm ships its own flatbuffers and nlohmann_json, use the versions ONNX Runtime bundles instead
+			args.push('-DFETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER');
 		}
 
 		if (platform === 'darwin') {
