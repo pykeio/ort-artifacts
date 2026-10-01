@@ -103,6 +103,7 @@ await new Command()
 	.option('--openvino', 'Enable OpenVINO EP')
 	.option('--nnapi', 'Enable NNAPI EP')
 	.option('--migraphx', 'Enable AMD MIGraphX EP')
+	.option('--vitis', 'Enable AMD Vitis AI EP')
 	.option('-N, --ninja', 'build with ninja')
 	.option('--vs2026', 'Use Visual Studio 2026 generator')
 	.option('--debug', 'Build with Debug config instead of Release')
@@ -294,7 +295,10 @@ await new Command()
 			args.push('-Donnxruntime_USE_OPENVINO_NPU=ON');
 			// args.push('-Donnxruntime_USE_OPENVINO_INTERFACE=ON');
 		}
-		if(options.nnapi) {
+		if (options.vitis) {
+			args.push('-Donnxruntime_USE_VITISAI=ON');
+		}
+		if (options.nnapi) {
 			args.push('-Donnxruntime_USE_NNAPI_BUILTIN=ON');
 		}
 		if (options.migraphx) {
