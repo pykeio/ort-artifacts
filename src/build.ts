@@ -57,6 +57,13 @@ const NVRTX_ARCHIVES: Record<'win32' | 'linux' | 'linux-aarch64', string> = {
 	'linux-aarch64': 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.5/TensorRT-RTX-1.5.0.114-Linux-aarch64-cuda-13.2-Release-external.tar.zst',
 	win32: 'https://developer.nvidia.com/downloads/trt/rtx_sdk/secure/1.4/TensorRT-RTX-1.4.0.76-Windows-amd64-cuda-13.2-Release-external.zip'
 };
+const OPENVINO_ARCHIVES: Record<'win32' | 'linux' | 'linux-aarch64', string> = {
+	linux: 'https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.4.1/linux/openvino_toolkit_ubuntu24_2026.4.1.22982.07f9c262b05_x86_64.tgz',
+	// there is no Ubuntu 24 arm64 build, the Ubuntu 22 one links against the older glibc so it works on both
+	'linux-aarch64': 'https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.4.1/linux/openvino_toolkit_ubuntu22_2026.4.1.22982.07f9c262b05_arm64.tgz',
+	// the plain Windows build links the DLL runtime, the vc_mt one is for a static CRT
+	win32: 'https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.4.1/windows/openvino_toolkit_windows_2026.4.1.22982.07f9c262b05_x86_64.zip'
+};
 
 async function *makeTarInput(folder: string): AsyncGenerator<TarStreamInput> {
 	for await (const entry of Deno.readDir(folder)) {
@@ -287,11 +294,22 @@ await new Command()
 			args.push('-Donnxruntime_USE_XNNPACK=ON');
 		}
 		if (options.openvino) {
+			// OpenVINO publishes runtimes for Linux and Windows only
+			if ((platform !== 'linux' && platform !== 'win32') || options.android) {
+				throw new ValidationError('--openvino is only available on Linux and Windows');
+			}
+			const openvinoArchiveStream = await fetch(OPENVINO_ARCHIVES[isLinuxAarch64 ? 'linux-aarch64' : platform as 'linux' | 'win32']).then(c => c.body!);
+			const openvinoOutPath = join(root, 'openvino');
+			await Deno.mkdir(openvinoOutPath);
+			await $`tar xvzC ${openvinoOutPath} --strip-components=1 -f -`.stdin(openvinoArchiveStream);
+			args.push(`-DOpenVINO_DIR=${join(openvinoOutPath, 'runtime', 'cmake')}`);
 			args.push('-Donnxruntime_DISABLE_RTTI=OFF');
 			args.push('-Donnxruntime_USE_OPENVINO=ON');
 			args.push('-Donnxruntime_USE_OPENVINO_CPU=ON');
 			args.push('-Donnxruntime_USE_OPENVINO_GPU=ON');
 			args.push('-Donnxruntime_USE_OPENVINO_NPU=ON');
+			// the runtime is unpacked outside the linker defaults, keep that build path out of the shipped library
+			args.push('-DCMAKE_SKIP_BUILD_RPATH=ON');
 			// args.push('-Donnxruntime_USE_OPENVINO_INTERFACE=ON');
 		}
 		if(options.nnapi) {
