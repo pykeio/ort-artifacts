@@ -129,11 +129,6 @@ jobs:
             static: true
             feature-set: openvino
             runs-on: ubuntu-24.04
-          - target: aarch64-unknown-linux-gnu
-            args: "--openvino -A aarch64 -N"
-            static: true
-            feature-set: openvino
-            runs-on: ubuntu-24.04-arm
           - target: x86_64-pc-windows-msvc
             args: "--openvino"
             static: true
