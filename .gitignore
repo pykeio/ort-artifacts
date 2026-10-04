@@ -4,5 +4,6 @@ output/
 cudnn/
 tensorrt/
 nvrtx/
+openvino/
 /node_modules
 /target
