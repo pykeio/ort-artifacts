@@ -33,14 +33,14 @@ jobs:
             feature-set: coreml
             runs-on: macos-15
           - target: aarch64-pc-windows-msvc
-            args: "-A aarch64 --directml"
+            args: "-A aarch64"
             static: true
-            feature-set: directml
+            feature-set: none
             runs-on: windows-2022
           - target: x86_64-pc-windows-msvc
-            args: "--directml"
+            args: ""
             static: true
-            feature-set: directml
+            feature-set: none
             runs-on: windows-2022
 
           # CUDA + TensorRT + NVRTX
@@ -57,9 +57,9 @@ jobs:
             cuda-version: "13.2.0"
             runs-on: ubuntu-24.04-arm
           - target: x86_64-pc-windows-msvc
-            args: "--directml --cuda=13 --trt --nvrtx"
+            args: "--cuda=13 --trt --nvrtx"
             static: true
-            feature-set: cuda13,tensorrt,nvrtx,directml
+            feature-set: cuda13,tensorrt,nvrtx
             cuda-version: "13.2.0"
             runs-on: windows-2022
 
@@ -110,9 +110,9 @@ jobs:
             cuda-version: "13.2.0"
             runs-on: ubuntu-24.04
           - target: x86_64-pc-windows-msvc
-            args: "--nvrtx --directml"
+            args: "--nvrtx"
             static: true
-            feature-set: nvrtx,directml
+            feature-set: nvrtx
             cuda-version: "13.2.0"
             runs-on: windows-2022
 
