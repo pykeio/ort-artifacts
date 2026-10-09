@@ -7,9 +7,9 @@ index e65b58a..013c2f6 100644
    set(_llm_fp4_srcs)
    set(_llm_excluded_srcs)
 -  if(WIN32)
--    list(FILTER _list EXCLUDE REGEX "/moe_gemm/deep_gemm_sm90\\.cu$")
+-    list(FILTER _list EXCLUDE REGEX "/(moe_gemm/deep_gemm_sm90|deep_gemm_matmul_sm90)\\.cu$")
 -  endif()
-+  list(FILTER _list EXCLUDE REGEX "/moe_gemm/deep_gemm_sm90\\.cu$")
++  list(FILTER _list EXCLUDE REGEX "/(moe_gemm/deep_gemm_sm90|deep_gemm_matmul_sm90)\\.cu$")
    foreach(_src IN LISTS _list)
      if(_src MATCHES "/contrib_ops/cuda/llm/.*\\.cu$")
        if(onnxruntime_USE_FPA_INTB_GEMM AND NOT onnxruntime_USE_FPA_INTB_GEMM_FULL AND
